@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0 AND MIT
 
-/* 
+/*
  * OQS OpenSSL 3 key handler.
- * 
- * Code strongly inspired by OpenSSL crypto/ec key handler but relocated here 
+ *
+ * Code strongly inspired by OpenSSL crypto/ec key handler but relocated here
  * to have code within provider.
  *
  */
@@ -44,7 +44,7 @@ typedef struct {
 } oqs_nid_name_t;
 
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_START
-#define NID_TABLE_LEN 39
+#define NID_TABLE_LEN 40
 
 static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
        { 0, "dilithium2", OQS_SIG_alg_dilithium_2, KEY_TYPE_SIG, 128 },
@@ -86,6 +86,7 @@ static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
        { 0, "sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_SIG, 128 },
        { 0, "p256_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
        { 0, "rsa3072_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium5_falcon1024, KEY_TYPE_CMP_SIG, 128 }
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_END
 };
 
@@ -106,7 +107,7 @@ static int get_secbits(int nid) {
       if (nid_names[i].nid == nid)
           return nid_names[i].secbits;
    }
-   return 0; 
+   return 0;
 }
 
 static int get_keytype(int nid) {
@@ -115,7 +116,7 @@ static int get_keytype(int nid) {
       if (nid_names[i].nid == nid)
           return nid_names[i].keytype;
    }
-   return 0; 
+   return 0;
 }
 
 static char* get_oqsname(int nid) {
@@ -124,12 +125,11 @@ static char* get_oqsname(int nid) {
       if (nid_names[i].nid == nid)
           return nid_names[i].oqsname;
    }
-   return 0; 
+   return 0;
 }
 
 static int oqsx_key_set_composites(OQSX_KEY *key) {
 	int ret = 0;
-
 	if (key->numkeys == 1) {
 		key->comp_privkey[0] = key->privkey;
 		key->comp_pubkey[0] = key->pubkey;
@@ -170,7 +170,8 @@ PROV_OQS_CTX *oqsx_newprovctx(OSSL_LIB_CTX *libctx, const OSSL_CORE_HANDLE *hand
     return ret;
 }
 
-void oqsx_freeprovctx(PROV_OQS_CTX *ctx) {
+void oqsx_freeprovctx(PROV_OQS_CTX *ctx)
+{
     OPENSSL_free(ctx);
 }
 
@@ -564,7 +565,7 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* tls_name, int
         ret->keytype = primitive;
 	ret->evp_info = evp_ctx->evp_info;
 	break;
-    default: 
+    default:
         OQS_KEY_PRINTF2("OQSX_KEY: Unknown key type encountered: %d\n", primitive);
 	goto err;
     }

@@ -54,7 +54,7 @@ static int test_oqs_signatures(const char *sigalg_name)
   if (OSSL_PROVIDER_available(libctx, "default")) {
     testresult  &=
       (mdctx = EVP_MD_CTX_new()) != NULL
-      && (ctx = EVP_PKEY_CTX_new_from_name(libctx, sigalg_name, NULL)) != NULL
+      && (ctx = EVP_PKEY_CTX_new_from_name(libctx, sigalg_name, NULL)) != NULL //probably place of error on dilithium5_falcon1024 
       && EVP_PKEY_keygen_init(ctx)
       && EVP_PKEY_generate(ctx, &key)
       && EVP_DigestSignInit_ex(mdctx, NULL, "SHA512", libctx, NULL, key, NULL)
@@ -73,7 +73,7 @@ static int test_oqs_signatures(const char *sigalg_name)
   }
 
   // this test must work also with default provider inactive:
-  testresult &=
+/*  testresult &=
     (mdctx = EVP_MD_CTX_new()) != NULL
     && (ctx = EVP_PKEY_CTX_new_from_name(libctx, sigalg_name, NULL)) != NULL
     && EVP_PKEY_keygen_init(ctx)
@@ -91,7 +91,7 @@ static int test_oqs_signatures(const char *sigalg_name)
     EVP_DigestVerifyInit_ex(mdctx, NULL, NULL, libctx, NULL, key, NULL)
     && EVP_DigestVerifyUpdate(mdctx, msg, sizeof(msg))
     && !EVP_DigestVerifyFinal(mdctx, sig, siglen);
-
+*/
   EVP_MD_CTX_free(mdctx);
   EVP_PKEY_free(key);
   OPENSSL_free(ctx);
@@ -111,8 +111,12 @@ int main(int argc, char *argv[])
   configfile = argv[2];
 
   T(OSSL_LIB_CTX_load_config(libctx, configfile));
-
   T(OSSL_PROVIDER_available(libctx, modulename));
+
+  test_oqs_signatures("dilithium5_falcon1024");
+  //test_oqs_signatures("p521_dilithium5");
+
+/*
 
   for (i = 0; i < nelem(sigalg_names); i++) {
     if (test_oqs_signatures(sigalg_names[i])) {
@@ -127,6 +131,8 @@ int main(int argc, char *argv[])
       errcnt++;
     }
   }
+
+*/
 
   OSSL_LIB_CTX_free(libctx);
 

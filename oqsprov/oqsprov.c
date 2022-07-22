@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 AND MIT
 
-/* 
+/*
  * OQS OpenSSL 3 provider
- * 
+ *
  * Code strongly inspired by OpenSSL legacy provider.
  *
  * ToDo: encoder/decoders
@@ -38,11 +38,11 @@ static OSSL_FUNC_provider_get_params_fn oqsprovider_get_params;
 static OSSL_FUNC_provider_query_operation_fn oqsprovider_query;
 extern OSSL_FUNC_provider_get_capabilities_fn oqs_provider_get_capabilities;
 
-/* 
+/*
  * List of all algorithms with given OIDs
  */
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_START
-#define OQS_OID_CNT 78
+#define OQS_OID_CNT 80
 static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 {
 "1.3.6.1.4.1.2.267.7.4.4", "dilithium2",
@@ -84,6 +84,8 @@ static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 "1.3.9999.6.7.1", "sphincsshake256128frobust",
 "1.3.9999.6.7.2" , "p256_sphincsshake256128frobust",
 "1.3.9999.6.7.3" , "rsa3072_sphincsshake256128frobust",
+"1.3" , "dilithium5_falcon1024"                             //TDB: understand the logic of this numbers
+
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_END
 };
 
@@ -158,6 +160,8 @@ static const OSSL_ALGORITHM oqsprovider_signatures[] = {
     ALG("sphincsshake256128frobust", oqs_signature_functions),
     ALG("p256_sphincsshake256128frobust", oqs_signature_functions),
     ALG("rsa3072_sphincsshake256128frobust", oqs_signature_functions),
+    ALG("dilithium5_falcon1024", oqs_signature_functions),
+
 ///// OQS_TEMPLATE_FRAGMENT_SIG_FUNCTIONS_END
     { NULL, NULL, NULL }
 };
@@ -227,6 +231,8 @@ static const OSSL_ALGORITHM oqsprovider_keymgmt[] = {
     ALG("sphincsharaka128frobust", oqs_sphincsharaka128frobust_keymgmt_functions),ALG("p256_sphincsharaka128frobust", oqs_p256_sphincsharaka128frobust_keymgmt_functions),ALG("rsa3072_sphincsharaka128frobust", oqs_rsa3072_sphincsharaka128frobust_keymgmt_functions),
     ALG("sphincssha256128frobust", oqs_sphincssha256128frobust_keymgmt_functions),ALG("p256_sphincssha256128frobust", oqs_p256_sphincssha256128frobust_keymgmt_functions),ALG("rsa3072_sphincssha256128frobust", oqs_rsa3072_sphincssha256128frobust_keymgmt_functions),
     ALG("sphincsshake256128frobust", oqs_sphincsshake256128frobust_keymgmt_functions),ALG("p256_sphincsshake256128frobust", oqs_p256_sphincsshake256128frobust_keymgmt_functions),ALG("rsa3072_sphincsshake256128frobust", oqs_rsa3072_sphincsshake256128frobust_keymgmt_functions),
+    ALG("dilithium5_falcon1024", oqs_dilithium5_falcon1024_keymgmt_functions),
+
 
     KEMKMALG3(frodo640aes, 128),
     KEMKMALG3(frodo640shake, 128),
@@ -413,7 +419,7 @@ int OSSL_provider_init(const OSSL_CORE_HANDLE *handle,
     // if libctx not yet existing, create a new one
     if ( ((corebiometh = oqs_bio_prov_init_bio_method()) == NULL) ||
          ((libctx = OSSL_LIB_CTX_new_child(handle, orig_in)) == NULL) ||
-         ((*provctx = oqsx_newprovctx(libctx, handle, corebiometh)) == NULL ) ) { 
+         ((*provctx = oqsx_newprovctx(libctx, handle, corebiometh)) == NULL ) ) {
         OQS_PROV_PRINTF("OQS PROV: error creating new provider context\n");
         ERR_raise(ERR_LIB_USER, OQSPROV_R_LIB_CREATE_ERR);
 	goto end_init;

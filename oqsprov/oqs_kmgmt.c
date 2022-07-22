@@ -102,7 +102,7 @@ static int oqsx_has(const void *keydata, int selection)
  * This is not the case with decoded private keys: Not all algorithms permit re-creating
  * public key material from private keys (https://github.com/PQClean/PQClean/issues/415#issuecomment-910377682).
  * Thus we implement the following logic:
- * 1) Private keys are matched binary if available in both keys; only one key having private key material 
+ * 1) Private keys are matched binary if available in both keys; only one key having private key material
  *    will be considered a mismatch
  * 2) Public keys are matched binary if available in both keys; only one key having public key material
  *    will NOT be considered a mismatch if both private keys are present and match: The latter logic will
@@ -110,7 +110,7 @@ static int oqsx_has(const void *keydata, int selection)
  *    public key match/test and one checking OpenSSL-type "EVP-PKEY-equality". This is possible as domain
  *    parameters don't really play a role in OQS, so we consider them as a proxy for private key matching.
  */
- 
+
 static int oqsx_match(const void *keydata1, const void *keydata2, int selection)
 {
     const OQSX_KEY *key1 = keydata1;
@@ -134,10 +134,10 @@ static int oqsx_match(const void *keydata1, const void *keydata2, int selection)
             (key1->pubkey != NULL && key2->pubkey == NULL) ||
             ((key1->tls_name!=NULL && key2->tls_name!=NULL) && strcmp(key1->tls_name, key2->tls_name)))
             // special case now: If domain parameter matching requested, consider private key match sufficient:
-            ok = ((selection & OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS) != 0) && 
+            ok = ((selection & OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS) != 0) &&
                   (key1->privkey != NULL && key2->privkey != NULL) &&
                   (CRYPTO_memcmp(key1->privkey, key2->privkey, key1->privkeylen) == 0);
-        else 
+        else
             ok = ok && ( (key1->pubkey==NULL && key2->pubkey==NULL) || ((key1->pubkey != NULL) && CRYPTO_memcmp(key1->pubkey, key2->pubkey, key1->pubkeylen) == 0) );
     }
     if (!ok) OQS_KM_PRINTF("OQSKEYMGMT: match failed!\n");
@@ -177,7 +177,7 @@ int oqsx_key_to_params(const OQSX_KEY *key, OSSL_PARAM_BLD *tmpl,
         }
 
         if (p != NULL || tmpl != NULL) {
-            if (   key->pubkeylen == 0 
+            if (   key->pubkeylen == 0
                 || !oqsx_param_build_set_octet_string(tmpl, p,
                                                       OSSL_PKEY_PARAM_PUB_KEY,
                                                       key->pubkey, key->pubkeylen))
@@ -199,7 +199,7 @@ int oqsx_key_to_params(const OQSX_KEY *key, OSSL_PARAM_BLD *tmpl,
         }
 
         if (p != NULL || tmpl != NULL) {
-            if (   key->privkeylen == 0 
+            if (   key->privkeylen == 0
                 || !oqsx_param_build_set_octet_string(tmpl, p,
                                                       OSSL_PKEY_PARAM_PRIV_KEY,
                                                       key->privkey, key->privkeylen))
@@ -862,6 +862,16 @@ static void *rsa3072_sphincsshake256128frobust_gen_init(void *provctx, int selec
     return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, "rsa3072_sphincsshake256128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 
+static void *dilithium5_falcon1024_new_key(void *provctx)
+{
+    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_dilithium5_falcon1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, NULL, 128);
+}
+
+static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
+{
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium5_falcon1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
+}
+
 ///// OQS_TEMPLATE_FRAGMENT_KEYMGMT_CONSTRUCTORS_END
 
 #define MAKE_SIG_KEYMGMT_FUNCTIONS(alg) \
@@ -1026,6 +1036,7 @@ MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_sphincssha256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(sphincsshake256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(p256_sphincsshake256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_sphincsshake256128frobust)
+MAKE_SIG_KEYMGMT_FUNCTIONS(dilithium5_falcon1024)
 
 MAKE_KEM_KEYMGMT_FUNCTIONS(frodo640aes, OQS_KEM_alg_frodokem_640_aes, 128)
 MAKE_KEM_KEYMGMT_FUNCTIONS(frodo640shake, OQS_KEM_alg_frodokem_640_shake, 128)
