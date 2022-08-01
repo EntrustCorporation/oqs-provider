@@ -39,6 +39,7 @@ typedef struct {
     int nid;
     char* tlsname;
     char* oqsname;
+    char* cmpname;
     int keytype;
     int secbits;
 } oqs_nid_name_t;
@@ -47,46 +48,46 @@ typedef struct {
 #define NID_TABLE_LEN 40
 
 static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
-       { 0, "dilithium2", OQS_SIG_alg_dilithium_2, KEY_TYPE_SIG, 128 },
-       { 0, "p256_dilithium2", OQS_SIG_alg_dilithium_2, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_dilithium2", OQS_SIG_alg_dilithium_2, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "dilithium3", OQS_SIG_alg_dilithium_3, KEY_TYPE_SIG, 192 },
-       { 0, "p384_dilithium3", OQS_SIG_alg_dilithium_3, KEY_TYPE_HYB_SIG, 192 },
-       { 0, "dilithium5", OQS_SIG_alg_dilithium_5, KEY_TYPE_SIG, 256 },
-       { 0, "p521_dilithium5", OQS_SIG_alg_dilithium_5, KEY_TYPE_HYB_SIG, 256 },
-       { 0, "dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, KEY_TYPE_SIG, 128 },
-       { 0, "p256_dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "dilithium3_aes", OQS_SIG_alg_dilithium_3_aes, KEY_TYPE_SIG, 192 },
-       { 0, "p384_dilithium3_aes", OQS_SIG_alg_dilithium_3_aes, KEY_TYPE_HYB_SIG, 192 },
-       { 0, "dilithium5_aes", OQS_SIG_alg_dilithium_5_aes, KEY_TYPE_SIG, 256 },
-       { 0, "p521_dilithium5_aes", OQS_SIG_alg_dilithium_5_aes, KEY_TYPE_HYB_SIG, 256 },
-       { 0, "falcon512", OQS_SIG_alg_falcon_512, KEY_TYPE_SIG, 128 },
-       { 0, "p256_falcon512", OQS_SIG_alg_falcon_512, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_falcon512", OQS_SIG_alg_falcon_512, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "falcon1024", OQS_SIG_alg_falcon_1024, KEY_TYPE_SIG, 256 },
-       { 0, "p521_falcon1024", OQS_SIG_alg_falcon_1024, KEY_TYPE_HYB_SIG, 256 },
-       { 0, "picnicl1full", OQS_SIG_alg_picnic_L1_full, KEY_TYPE_SIG, 128 },
-       { 0, "p256_picnicl1full", OQS_SIG_alg_picnic_L1_full, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_picnicl1full", OQS_SIG_alg_picnic_L1_full, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "picnic3l1", OQS_SIG_alg_picnic3_L1, KEY_TYPE_SIG, 128 },
-       { 0, "p256_picnic3l1", OQS_SIG_alg_picnic3_L1, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_picnic3l1", OQS_SIG_alg_picnic3_L1, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, KEY_TYPE_SIG, 128 },
-       { 0, "p256_rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rainbowVclassic", OQS_SIG_alg_rainbow_V_classic, KEY_TYPE_SIG, 256 },
-       { 0, "p521_rainbowVclassic", OQS_SIG_alg_rainbow_V_classic, KEY_TYPE_HYB_SIG, 256 },
-       { 0, "sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, KEY_TYPE_SIG, 128 },
-       { 0, "p256_sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, KEY_TYPE_SIG, 128 },
-       { 0, "p256_sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_SIG, 128 },
-       { 0, "p256_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "rsa3072_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium5_falcon1024, KEY_TYPE_CMP_SIG, 128 }
+       { 0, "dilithium2", OQS_SIG_alg_dilithium_2, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_dilithium2", OQS_SIG_alg_dilithium_2, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_dilithium2", OQS_SIG_alg_dilithium_2, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "dilithium3", OQS_SIG_alg_dilithium_3, NULL, KEY_TYPE_SIG, 192 },
+       { 0, "p384_dilithium3", OQS_SIG_alg_dilithium_3, NULL, KEY_TYPE_HYB_SIG, 192 },
+       { 0, "dilithium5", OQS_SIG_alg_dilithium_5, NULL, KEY_TYPE_SIG, 256 },
+       { 0, "p521_dilithium5", OQS_SIG_alg_dilithium_5, NULL, KEY_TYPE_HYB_SIG, 256 },
+       { 0, "dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_dilithium2_aes", OQS_SIG_alg_dilithium_2_aes, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "dilithium3_aes", OQS_SIG_alg_dilithium_3_aes, NULL, KEY_TYPE_SIG, 192 },
+       { 0, "p384_dilithium3_aes", OQS_SIG_alg_dilithium_3_aes, NULL, KEY_TYPE_HYB_SIG, 192 },
+       { 0, "dilithium5_aes", OQS_SIG_alg_dilithium_5_aes, NULL, KEY_TYPE_SIG, 256 },
+       { 0, "p521_dilithium5_aes", OQS_SIG_alg_dilithium_5_aes, NULL, KEY_TYPE_HYB_SIG, 256 },
+       { 0, "falcon512", OQS_SIG_alg_falcon_512, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_falcon512", OQS_SIG_alg_falcon_512, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_falcon512", OQS_SIG_alg_falcon_512, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "falcon1024", OQS_SIG_alg_falcon_1024, NULL, KEY_TYPE_SIG, 256 },
+       { 0, "p521_falcon1024", OQS_SIG_alg_falcon_1024, NULL, KEY_TYPE_HYB_SIG, 256 },
+       { 0, "picnicl1full", OQS_SIG_alg_picnic_L1_full, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_picnicl1full", OQS_SIG_alg_picnic_L1_full, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_picnicl1full", OQS_SIG_alg_picnic_L1_full, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "picnic3l1", OQS_SIG_alg_picnic3_L1, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_picnic3l1", OQS_SIG_alg_picnic3_L1, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_picnic3l1", OQS_SIG_alg_picnic3_L1, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_rainbowIclassic", OQS_SIG_alg_rainbow_I_classic, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rainbowVclassic", OQS_SIG_alg_rainbow_V_classic, NULL, KEY_TYPE_SIG, 256 },
+       { 0, "p521_rainbowVclassic", OQS_SIG_alg_rainbow_V_classic, NULL, KEY_TYPE_HYB_SIG, 256 },
+       { 0, "sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_sphincsharaka128frobust", OQS_SIG_alg_sphincs_haraka_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_sphincssha256128frobust", OQS_SIG_alg_sphincs_sha256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_SIG, 128 },
+       { 0, "p256_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "rsa3072_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
+       { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, KEY_TYPE_CMP_SIG, 128 }
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_END
 };
 
@@ -128,8 +129,18 @@ static char* get_oqsname(int nid) {
    return 0;
 }
 
+static char* get_cmpname(int nid) {
+   int i;
+   for(i=0;i<NID_TABLE_LEN;i++) {
+      if (nid_names[i].nid == nid)
+          return nid_names[i].cmpname;
+   }
+   return 0;
+}
+
 static int oqsx_key_set_composites(OQSX_KEY *key) {
 	int ret = 0;
+  printf("1");
 	if (key->numkeys == 1) {
 		key->comp_privkey[0] = key->privkey;
 		key->comp_pubkey[0] = key->pubkey;
@@ -161,6 +172,7 @@ static int oqsx_key_set_composites(OQSX_KEY *key) {
 }
 
 PROV_OQS_CTX *oqsx_newprovctx(OSSL_LIB_CTX *libctx, const OSSL_CORE_HANDLE *handle, BIO_METHOD *bm) {
+    printf("2");
     PROV_OQS_CTX * ret = OPENSSL_zalloc(sizeof(PROV_OQS_CTX));
     if (ret) {
        ret->libctx = libctx;
@@ -170,19 +182,21 @@ PROV_OQS_CTX *oqsx_newprovctx(OSSL_LIB_CTX *libctx, const OSSL_CORE_HANDLE *hand
     return ret;
 }
 
-void oqsx_freeprovctx(PROV_OQS_CTX *ctx)
-{
+void oqsx_freeprovctx(PROV_OQS_CTX *ctx) {
+  printf("3");
     OPENSSL_free(ctx);
 }
 
 
 void oqsx_key_set0_libctx(OQSX_KEY *key, OSSL_LIB_CTX *libctx)
 {
+  printf("4");
     key->libctx = libctx;
 }
 
 /* convenience function creating OQSX keys from nids (only for sigs) */
 static OQSX_KEY *oqsx_key_new_from_nid(OSSL_LIB_CTX *libctx, const char *propq, int nid) {
+  printf("5");
 	OQS_KEY_PRINTF2("Generating OQSX key for nid %d\n", nid);
 
 	char* tls_algname = (char *)OBJ_nid2sn(nid);
@@ -193,13 +207,14 @@ static OQSX_KEY *oqsx_key_new_from_nid(OSSL_LIB_CTX *libctx, const char *propq, 
 		return NULL;
 	}
 
-	return oqsx_key_new(libctx, get_oqsname(nid), tls_algname, get_keytype(nid), propq, get_secbits(nid));
+	return oqsx_key_new(libctx, get_oqsname(nid), get_cmpname(nid), tls_algname, get_keytype(nid), propq, get_secbits(nid));
 }
 
 /* Workaround for not functioning EC PARAM initialization
  * TBD, check https://github.com/openssl/openssl/issues/16989
  */
 EVP_PKEY* setECParams(EVP_PKEY *eck, int nid) {
+  printf("6");
     const char p256params[] = { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 };
     const char p384params[] = { 0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x22 };
     const char p521params[] = { 0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x23 };
@@ -226,6 +241,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg,
                       oqsx_key_op_t op,
                       OSSL_LIB_CTX *libctx, const char *propq)
 {
+  printf("7");
     OQSX_KEY *key = NULL;
     void **privkey, **pubkey;
     int nid = NID_undef;
@@ -331,6 +347,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg,
 OQSX_KEY *oqsx_key_from_x509pubkey(const X509_PUBKEY *xpk,
                               OSSL_LIB_CTX *libctx, const char *propq)
 {
+  printf("8");
     const unsigned char *p;
     int plen;
     X509_ALGOR *palg;
@@ -346,6 +363,7 @@ OQSX_KEY *oqsx_key_from_x509pubkey(const X509_PUBKEY *xpk,
 OQSX_KEY *oqsx_key_from_pkcs8(const PKCS8_PRIV_KEY_INFO *p8inf,
                               OSSL_LIB_CTX *libctx, const char *propq)
 {
+  printf("9");
     OQSX_KEY *oqsx = NULL;
     const unsigned char *p;
     int plen;
@@ -393,6 +411,7 @@ static const OQSX_EVP_INFO nids_ecx[] = {
 
 static int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char* algname)
 {
+  printf("-10-");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -429,6 +448,7 @@ static int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char* algna
 
 static int oqshybkem_init_ecp(int bit_security, OQSX_EVP_CTX *evp_ctx)
 {
+  printf("-11-");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -453,6 +473,7 @@ static int oqshybkem_init_ecp(int bit_security, OQSX_EVP_CTX *evp_ctx)
 
 static int oqshybkem_init_ecx(int bit_security, OQSX_EVP_CTX *evp_ctx)
 {
+  printf("-12-");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -477,8 +498,9 @@ static const int (*init_kex_fun[])(int, OQSX_EVP_CTX *) = {
         oqshybkem_init_ecx
 };
 
-OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* tls_name, int primitive, const char *propq, int bit_security)
+OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, char* tls_name, int primitive, const char *propq, int bit_security)
 {
+  printf("-13-");
     OQSX_KEY *ret = OPENSSL_zalloc(sizeof(*ret));
     OQSX_EVP_CTX *evp_ctx = NULL;
     int ret2 = 0;
@@ -543,7 +565,7 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* tls_name, int
         ret->pubkeylen = (ret->numkeys-1)*SIZE_OF_UINT32 + ret->oqsx_provider_ctx.oqsx_qs_ctx.kem->length_public_key + evp_ctx->evp_info->length_public_key;
         ret->oqsx_provider_ctx.oqsx_evp_ctx = evp_ctx;
         ret->keytype = primitive;
-	break;
+  	break;
     case KEY_TYPE_HYB_SIG:
         ret->oqsx_provider_ctx.oqsx_qs_ctx.sig = OQS_SIG_new(oqs_name);
         if (!ret->oqsx_provider_ctx.oqsx_qs_ctx.sig) {
@@ -564,8 +586,30 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* tls_name, int
         ret->oqsx_provider_ctx.oqsx_evp_ctx = evp_ctx;
         ret->keytype = primitive;
 	ret->evp_info = evp_ctx->evp_info;
+    break;
+    case KEY_TYPE_CMP_SIG:
+        ret->oqsx_provider_ctx.oqsx_qs_ctx.sig = OQS_SIG_new(oqs_name);
+        if (!ret->oqsx_provider_ctx.oqsx_qs_ctx.sig) {
+            fprintf(stderr, "Could not create OQS signature algorithm %s. Enabled in liboqs?A\n", oqs_name);
+            goto err;
+        }
+
+        ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig = OQS_SIG_new(cmp_name);
+        if (!ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig) {
+            fprintf(stderr, "Could not create OQS signature algorithm %s. Enabled in liboqs?B\n", cmp_name);
+            goto err;
+        }
+
+        ret->numkeys = 2;
+        ret->comp_privkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
+        ret->comp_pubkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
+        ret->privkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key;
+        ret->pubkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
+        ret->keytype = primitive;
+
 	break;
     default:
+        printf("OQSX_KEY: Unknown key type encountered: %d\n", primitive);
         OQS_KEY_PRINTF2("OQSX_KEY: Unknown key type encountered: %d\n", primitive);
 	goto err;
     }
@@ -592,6 +636,7 @@ err:
 
 void oqsx_key_free(OQSX_KEY *key)
 {
+  printf("-14-");
     int refcnt;
 
     if (key == NULL)
@@ -628,6 +673,7 @@ void oqsx_key_free(OQSX_KEY *key)
 
 int oqsx_key_up_ref(OQSX_KEY *key)
 {
+  printf("-15-");
     int refcnt;
 
     refcnt = atomic_fetch_add_explicit(&key->references, 1,
@@ -641,6 +687,7 @@ int oqsx_key_up_ref(OQSX_KEY *key)
 
 int oqsx_key_allocate_keymaterial(OQSX_KEY *key, int include_private)
 {
+  printf("-16-");
     int ret = 0;
 
     if (!key->privkey && include_private) {
@@ -657,6 +704,7 @@ int oqsx_key_allocate_keymaterial(OQSX_KEY *key, int include_private)
 
 int oqsx_key_fromdata(OQSX_KEY *key, const OSSL_PARAM params[], int include_private)
 {
+  printf("-17-");
     const OSSL_PARAM *p;
 
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_PRIV_KEY);
@@ -700,6 +748,7 @@ int oqsx_key_fromdata(OQSX_KEY *key, const OSSL_PARAM params[], int include_priv
 
 // OQS key always the last of the numkeys comp keys
 static int oqsx_key_gen_oqs(OQSX_KEY *key, int gen_kem) {
+  printf("-18-");
 	if (gen_kem)
 		return OQS_KEM_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.kem, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]);
 	else
@@ -711,6 +760,7 @@ static int oqsx_key_gen_oqs(OQSX_KEY *key, int gen_kem) {
  */
 static EVP_PKEY* oqsx_key_gen_evp_key(OQSX_EVP_CTX *ctx, unsigned char *pubkey, unsigned char *privkey)
 {
+  printf("-19-");
     int ret = 0, ret2 = 0;
 
     // Free at errhyb:
@@ -775,6 +825,7 @@ static EVP_PKEY* oqsx_key_gen_evp_key(OQSX_EVP_CTX *ctx, unsigned char *pubkey, 
 /* allocates OQS and classical keys; retains EVP_PKEY on success for sig OQSX_KEY */
 int oqsx_key_gen(OQSX_KEY *key)
 {
+  printf("-20-");
     int ret = 0;
     EVP_PKEY* pkey = NULL;
 
@@ -818,10 +869,12 @@ int oqsx_key_gen(OQSX_KEY *key)
 }
 
 int oqsx_key_secbits(OQSX_KEY *key) {
+  printf("-21-");
     return key->bit_security;
 }
 
 int oqsx_key_maxsize(OQSX_KEY *key) {
+  printf("-22-");
     switch(key->keytype) {
     case KEY_TYPE_KEM:
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.kem->length_shared_secret;

@@ -132,6 +132,7 @@ struct oqsx_key_st {
     char *propq;
     OQSX_KEY_TYPE keytype;
     OQSX_PROVIDER_CTX oqsx_provider_ctx;
+    OQSX_PROVIDER_CTX oqsx_provider_ctx_cmp;
     EVP_PKEY *classical_pkey; // for hybrid sigs
     const OQSX_EVP_INFO *evp_info;
     size_t numkeys;
@@ -164,7 +165,7 @@ typedef struct oqsx_key_st OQSX_KEY;
 int oqs_set_nid(char* tlsname, int nid);
 
 /* Create OQSX_KEY data structure based on parameters; key material allocated separately */
-OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* tls_name, int is_kem, const char *propq, int bit_security);
+OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, char* tls_name, int is_kem, const char *propq, int bit_security);
 
 /* allocate key material; component pointers need to be set separately */
 int oqsx_key_allocate_keymaterial(OQSX_KEY *key, int include_private);
