@@ -140,19 +140,19 @@ static char* get_cmpname(int nid) {
 
 static int oqsx_key_set_composites(OQSX_KEY *key) {
 	int ret = 0;
-  printf("1");
+  printf("1\n");
 	if (key->numkeys == 1) {
 		key->comp_privkey[0] = key->privkey;
 		key->comp_pubkey[0] = key->pubkey;
 	}
-	else { // TBD: extend for more than 1 classic key:
+	else { // TBD: extend for more than 1 classic key or first OQS for composite:
 		int classic_pubkey_len, classic_privkey_len;
 
 		if (key->privkey) {
-			key->comp_privkey[0] = key->privkey + SIZE_OF_UINT32;
-			DECODE_UINT32(classic_privkey_len, key->privkey);
-			key->comp_privkey[1] = key->privkey + classic_privkey_len + SIZE_OF_UINT32;
-		}
+  			key->comp_privkey[0] = key->privkey + SIZE_OF_UINT32;
+  			DECODE_UINT32(classic_privkey_len, key->privkey);
+  			key->comp_privkey[1] = key->privkey + classic_privkey_len + SIZE_OF_UINT32;
+      }
 		else {
 			key->comp_privkey[0] = NULL;
 			key->comp_privkey[1] = NULL;
@@ -172,7 +172,7 @@ static int oqsx_key_set_composites(OQSX_KEY *key) {
 }
 
 PROV_OQS_CTX *oqsx_newprovctx(OSSL_LIB_CTX *libctx, const OSSL_CORE_HANDLE *handle, BIO_METHOD *bm) {
-    printf("2");
+    printf("2\n");
     PROV_OQS_CTX * ret = OPENSSL_zalloc(sizeof(PROV_OQS_CTX));
     if (ret) {
        ret->libctx = libctx;
@@ -183,20 +183,20 @@ PROV_OQS_CTX *oqsx_newprovctx(OSSL_LIB_CTX *libctx, const OSSL_CORE_HANDLE *hand
 }
 
 void oqsx_freeprovctx(PROV_OQS_CTX *ctx) {
-  printf("3");
+  printf("3\n");
     OPENSSL_free(ctx);
 }
 
 
 void oqsx_key_set0_libctx(OQSX_KEY *key, OSSL_LIB_CTX *libctx)
 {
-  printf("4");
+  printf("4\n");
     key->libctx = libctx;
 }
 
 /* convenience function creating OQSX keys from nids (only for sigs) */
 static OQSX_KEY *oqsx_key_new_from_nid(OSSL_LIB_CTX *libctx, const char *propq, int nid) {
-  printf("5");
+  printf("5\n");
 	OQS_KEY_PRINTF2("Generating OQSX key for nid %d\n", nid);
 
 	char* tls_algname = (char *)OBJ_nid2sn(nid);
@@ -214,7 +214,7 @@ static OQSX_KEY *oqsx_key_new_from_nid(OSSL_LIB_CTX *libctx, const char *propq, 
  * TBD, check https://github.com/openssl/openssl/issues/16989
  */
 EVP_PKEY* setECParams(EVP_PKEY *eck, int nid) {
-  printf("6");
+  printf("6\n");
     const char p256params[] = { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 };
     const char p384params[] = { 0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x22 };
     const char p521params[] = { 0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x23 };
@@ -241,7 +241,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg,
                       oqsx_key_op_t op,
                       OSSL_LIB_CTX *libctx, const char *propq)
 {
-  printf("7");
+  printf("7\n");
     OQSX_KEY *key = NULL;
     void **privkey, **pubkey;
     int nid = NID_undef;
@@ -347,7 +347,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg,
 OQSX_KEY *oqsx_key_from_x509pubkey(const X509_PUBKEY *xpk,
                               OSSL_LIB_CTX *libctx, const char *propq)
 {
-  printf("8");
+  printf("8\n");
     const unsigned char *p;
     int plen;
     X509_ALGOR *palg;
@@ -363,7 +363,7 @@ OQSX_KEY *oqsx_key_from_x509pubkey(const X509_PUBKEY *xpk,
 OQSX_KEY *oqsx_key_from_pkcs8(const PKCS8_PRIV_KEY_INFO *p8inf,
                               OSSL_LIB_CTX *libctx, const char *propq)
 {
-  printf("9");
+  printf("9\n");
     OQSX_KEY *oqsx = NULL;
     const unsigned char *p;
     int plen;
@@ -411,7 +411,7 @@ static const OQSX_EVP_INFO nids_ecx[] = {
 
 static int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char* algname)
 {
-  printf("-10-");
+  printf("10\n");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -448,7 +448,7 @@ static int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char* algna
 
 static int oqshybkem_init_ecp(int bit_security, OQSX_EVP_CTX *evp_ctx)
 {
-  printf("-11-");
+  printf("11\n");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -473,7 +473,7 @@ static int oqshybkem_init_ecp(int bit_security, OQSX_EVP_CTX *evp_ctx)
 
 static int oqshybkem_init_ecx(int bit_security, OQSX_EVP_CTX *evp_ctx)
 {
-  printf("-12-");
+  printf("12\n");
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 2, err);
@@ -500,7 +500,7 @@ static const int (*init_kex_fun[])(int, OQSX_EVP_CTX *) = {
 
 OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, char* tls_name, int primitive, const char *propq, int bit_security)
 {
-  printf("-13-");
+  printf("13\n");
     OQSX_KEY *ret = OPENSSL_zalloc(sizeof(*ret));
     OQSX_EVP_CTX *evp_ctx = NULL;
     int ret2 = 0;
@@ -603,8 +603,8 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, cha
         ret->numkeys = 2;
         ret->comp_privkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
         ret->comp_pubkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
-        ret->privkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key;
-        ret->pubkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
+        ret->privkeylen = (ret->numkeys-1) * SIZE_OF_UINT32 + ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key;
+        ret->pubkeylen = (ret->numkeys-1) * SIZE_OF_UINT32 + ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
         ret->keytype = primitive;
 
 	break;
@@ -618,6 +618,7 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, cha
     ret->references = 1;
     ret->tls_name = OPENSSL_strdup(tls_name);
     ret->bit_security = bit_security;
+
 
     if (propq != NULL) {
         ret->propq = OPENSSL_strdup(propq);
@@ -636,14 +637,14 @@ err:
 
 void oqsx_key_free(OQSX_KEY *key)
 {
-  printf("-14-");
+  printf("14\n");
     int refcnt;
-
     if (key == NULL)
         return;
 
     refcnt = atomic_fetch_sub_explicit(&key->references, 1,
                                        memory_order_relaxed) - 1;
+    printf("HERE\n");
     if (refcnt == 0)
         atomic_thread_fence(memory_order_acquire);
     OQS_KEY_PRINTF3("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
@@ -665,6 +666,9 @@ void oqsx_key_free(OQSX_KEY *key)
         EVP_PKEY_CTX_free(key->oqsx_provider_ctx.oqsx_evp_ctx->ctx);
         EVP_PKEY_free(key->oqsx_provider_ctx.oqsx_evp_ctx->keyParam);
         OPENSSL_free(key->oqsx_provider_ctx.oqsx_evp_ctx);
+    } else if(key->keytype == KEY_TYPE_CMP_SIG){
+        OQS_SIG_free(key->oqsx_provider_ctx.oqsx_qs_ctx.sig);
+        OQS_SIG_free(key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig);
     } else
         OQS_SIG_free(key->oqsx_provider_ctx.oqsx_qs_ctx.sig);
     OPENSSL_free(key->classical_pkey);
@@ -673,12 +677,13 @@ void oqsx_key_free(OQSX_KEY *key)
 
 int oqsx_key_up_ref(OQSX_KEY *key)
 {
-  printf("-15-");
+  printf("15\n");
     int refcnt;
-
     refcnt = atomic_fetch_add_explicit(&key->references, 1,
                                        memory_order_relaxed) + 1;
+
     OQS_KEY_PRINTF3("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
+    printf("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
 #ifndef NDEBUG
     assert(refcnt > 1);
 #endif
@@ -687,7 +692,7 @@ int oqsx_key_up_ref(OQSX_KEY *key)
 
 int oqsx_key_allocate_keymaterial(OQSX_KEY *key, int include_private)
 {
-  printf("-16-");
+  printf("16\n");
     int ret = 0;
 
     if (!key->privkey && include_private) {
@@ -704,7 +709,7 @@ int oqsx_key_allocate_keymaterial(OQSX_KEY *key, int include_private)
 
 int oqsx_key_fromdata(OQSX_KEY *key, const OSSL_PARAM params[], int include_private)
 {
-  printf("-17-");
+  printf("17\n");
     const OSSL_PARAM *p;
 
     p = OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_PRIV_KEY);
@@ -748,11 +753,16 @@ int oqsx_key_fromdata(OQSX_KEY *key, const OSSL_PARAM params[], int include_priv
 
 // OQS key always the last of the numkeys comp keys
 static int oqsx_key_gen_oqs(OQSX_KEY *key, int gen_kem) {
-  printf("-18-");
+printf("18\n");
 	if (gen_kem)
 		return OQS_KEM_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.kem, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]);
-	else
+	else {
+    if (key->keytype == KEY_TYPE_CMP_SIG)
+      return -(OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-2], key->comp_privkey[key->numkeys-2]) ||
+              OQS_SIG_keypair(key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]));
+
 		return OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]);
+  }
 }
 
 /* Generate classic keys, store length in leading SIZE_OF_UINT32 bytes of pubkey/privkey buffers;
@@ -760,7 +770,7 @@ static int oqsx_key_gen_oqs(OQSX_KEY *key, int gen_kem) {
  */
 static EVP_PKEY* oqsx_key_gen_evp_key(OQSX_EVP_CTX *ctx, unsigned char *pubkey, unsigned char *privkey)
 {
-  printf("-19-");
+  printf("19\n");
     int ret = 0, ret2 = 0;
 
     // Free at errhyb:
@@ -825,7 +835,7 @@ static EVP_PKEY* oqsx_key_gen_evp_key(OQSX_EVP_CTX *ctx, unsigned char *pubkey, 
 /* allocates OQS and classical keys; retains EVP_PKEY on success for sig OQSX_KEY */
 int oqsx_key_gen(OQSX_KEY *key)
 {
-  printf("-20-");
+  printf("20\n");
     int ret = 0;
     EVP_PKEY* pkey = NULL;
 
@@ -848,12 +858,12 @@ int oqsx_key_gen(OQSX_KEY *key)
         if (key->keytype == KEY_TYPE_HYB_SIG) {
            key->classical_pkey = pkey;
            ret = oqsx_key_gen_oqs(key, 0);
-	}
+	      }
 	else {
            EVP_PKEY_free(pkey);
            ret = oqsx_key_gen_oqs(key, 1);
 	}
-    } else if (key->keytype == KEY_TYPE_SIG) {
+} else if (key->keytype == KEY_TYPE_SIG || key->keytype == KEY_TYPE_CMP_SIG) {
         ret = oqsx_key_set_composites(key);
         ON_ERR_GOTO(ret, err);
         ret = oqsx_key_gen_oqs(key, 0);
@@ -869,12 +879,12 @@ int oqsx_key_gen(OQSX_KEY *key)
 }
 
 int oqsx_key_secbits(OQSX_KEY *key) {
-  printf("-21-");
+  printf("21\n");
     return key->bit_security;
 }
 
 int oqsx_key_maxsize(OQSX_KEY *key) {
-  printf("-22-");
+  printf("22\n");
     switch(key->keytype) {
     case KEY_TYPE_KEM:
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.kem->length_shared_secret;
@@ -885,6 +895,8 @@ int oqsx_key_maxsize(OQSX_KEY *key) {
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature;
     case KEY_TYPE_HYB_SIG:
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature + key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->length_signature+SIZE_OF_UINT32;
+    case KEY_TYPE_CMP_SIG:
+  return key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature + key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_signature + SIZE_OF_UINT32;
     default:
 	OQS_KEY_PRINTF("OQSX KEY: Wrong key type\n");
 	return 0;

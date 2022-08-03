@@ -4,11 +4,11 @@
  * OQS OpenSSL 3 provider
  *
  * Code strongly inspired by OpenSSL DSA signature provider.
- * 
+ *
  * ToDo:  Go beyone EVP use cases/testing
  *
- * Significant hurdle: Signature providers of new algorithms are not utilized 
- * properly in OpenSSL3 yet -> Integration won't be seamless and probably 
+ * Significant hurdle: Signature providers of new algorithms are not utilized
+ * properly in OpenSSL3 yet -> Integration won't be seamless and probably
  * requires quite some (upstream) OpenSSL3 dev investment.
  */
 
@@ -70,7 +70,7 @@ static int get_aid(unsigned char** oidbuf, const char *tls_name) {
 
    X509_ALGOR_set0(algor, OBJ_txt2obj(tls_name, 0), V_ASN1_UNDEF, NULL);
 
-   aidlen = i2d_X509_ALGOR(algor, oidbuf); 
+   aidlen = i2d_X509_ALGOR(algor, oidbuf);
    X509_ALGOR_free(algor);
    return(aidlen);
 }
@@ -148,7 +148,7 @@ static int oqs_sig_setup_md(PROV_OQSSIG_CTX *ctx,
         EVP_MD_CTX_free(ctx->mdctx);
         EVP_MD_free(ctx->md);
 
-        if (ctx->aid) 
+        if (ctx->aid)
             OPENSSL_free(ctx->aid);
         ctx->aid = NULL; // ensure next function allocates memory
         ctx->aid_len = get_aid(&(ctx->aid), ctx->sig->tls_name);
@@ -202,15 +202,18 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
     PROV_OQSSIG_CTX *poqs_sigctx = (PROV_OQSSIG_CTX *)vpoqs_sigctx;
     OQSX_KEY* oqsxkey = poqs_sigctx->sig;
     OQS_SIG*  oqs_key = poqs_sigctx->sig->oqsx_provider_ctx.oqsx_qs_ctx.sig;
+    OQS_SIG*  cmp_key = poqs_sigctx->sig->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig; // if this value is not NULL, we're running composite
     EVP_PKEY* evpkey = oqsxkey->classical_pkey; // if this value is not NULL, we're running hybrid
     EVP_PKEY_CTX *classical_ctx_sign = NULL;
 
+    printf("OQS SIG provider: sign called for %ld bytes\n", tbslen);
     OQS_SIG_PRINTF2("OQS SIG provider: sign called for %ld bytes\n", tbslen);
 
     int is_hybrid = evpkey!=NULL;
+    int is_composite = cmp_key!=NULL;
     size_t max_sig_len = oqs_key->length_signature;
-    size_t classical_sig_len = 0, oqs_sig_len = 0;
-    size_t actual_classical_sig_len = 0;
+    size_t classical_sig_len = 0, oqs_sig_len = 0, cmp_sig_len = 0;
+    size_t actual_classical_sig_len = 0, actual_oqs_sig_len = 0;
     size_t index = 0;
     int rv = 0;
 
@@ -222,6 +225,9 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
       actual_classical_sig_len = oqsxkey->evp_info->length_signature;
       max_sig_len += (SIZE_OF_UINT32 + actual_classical_sig_len);
     }
+    if (is_composite)
+      max_sig_len += (SIZE_OF_UINT32 + cmp_key->length_signature);
+
 
     if (sig == NULL) {
       *siglen = max_sig_len;
@@ -280,6 +286,7 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
             ERR_raise(ERR_LIB_USER, ERR_R_FATAL);
             goto endsign;
           }
+
       /* activate in case we want to use pre-performed hashes:
        * }
        * else { // hashing done before; just sign:
@@ -299,18 +306,73 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
       index += classical_sig_len;
     }
 
-    if (OQS_SIG_sign(oqs_key, sig + index, &oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
-      ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
-      goto endsign;
-    }
-    *siglen = classical_sig_len + oqs_sig_len;
+    if (is_composite){
+      printf("A\n");
+      if (OQS_SIG_sign(oqs_key, sig + SIZE_OF_UINT32, &actual_oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-2]) != OQS_SUCCESS) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
+        goto endsign;
+      }
+
+      printf("B\n" );
+
+      ENCODE_UINT32(sig, actual_oqs_sig_len);
+      oqs_sig_len = SIZE_OF_UINT32 + actual_oqs_sig_len;
+      index += oqs_sig_len;
+
+      printf("C\n" );
+
+      if (OQS_SIG_sign(cmp_key, sig + index, &cmp_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
+        goto endsign;
+      }
+      printf("D\n" );
+    } else if (OQS_SIG_sign(oqs_key, sig + index, &oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
+              ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
+              goto endsign;
+          }
+
+
+    *siglen = classical_sig_len + oqs_sig_len + cmp_sig_len;
+    printf("OQS SIG provider: signing completes with size %ld\n", *siglen);
     OQS_SIG_PRINTF2("OQS SIG provider: signing completes with size %ld\n", *siglen);
     rv = 1; /* success */
 
+/*
+    printf("%d, %ld, %ld\n", SIZE_OF_UINT32, actual_classical_sig_len, index);
+
+    printf("%ld, %ld, %ld\n", classical_sig_len, oqs_sig_len, *siglen);
+
+    printf("classical sig:");
+
+    for (int k = SIZE_OF_UINT32; k<index; k++)
+      {
+      printf("%c", sig[k]);
+      }
+
+      printf("\n\n\n\n\n\nOQS sig:");
+
+    for (int k =index; k<oqs_sig_len; k++)
+      {
+      printf("%c", sig[k]);
+      }
+
+    printf("\n\n\n\n\n\nFULL sig:");
+
+    for (int k =0; k<*siglen; k++)
+      {
+      if (k == SIZE_OF_UINT32) printf("\n-----------------------------\n");
+      if (k == index) printf("\n-----------------------------\n");
+      printf("%c", sig[k]);
+      }
+
+      printf("\n");
+
+*/
  endsign:
     if (classical_ctx_sign) {
       EVP_PKEY_CTX_free(classical_ctx_sign);
     }
+    printf("rv %i\n", rv);
     return rv;
 }
 
@@ -320,11 +382,13 @@ static int oqs_sig_verify(void *vpoqs_sigctx, const unsigned char *sig, size_t s
     PROV_OQSSIG_CTX *poqs_sigctx = (PROV_OQSSIG_CTX *)vpoqs_sigctx;
     OQSX_KEY* oqsxkey = poqs_sigctx->sig;
     OQS_SIG*  oqs_key = poqs_sigctx->sig->oqsx_provider_ctx.oqsx_qs_ctx.sig;
+    OQS_SIG*  cmp_key = poqs_sigctx->sig->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig; // if this value is not NULL, we're running composite
     EVP_PKEY* evpkey = oqsxkey->classical_pkey; // if this value is not NULL, we're running hybrid
     EVP_PKEY_CTX *classical_ctx_sign = NULL;
     EVP_PKEY_CTX *ctx_verify = NULL;
     int is_hybrid = evpkey!=NULL;
-    size_t classical_sig_len = 0;
+    int is_composite = cmp_key!=NULL;
+    size_t classical_sig_len = 0, oqs_sig_len = 0;
     size_t index = 0;
     int rv = 0;
 
@@ -394,15 +458,33 @@ static int oqs_sig_verify(void *vpoqs_sigctx, const unsigned char *sig, size_t s
       classical_sig_len = SIZE_OF_UINT32 + actual_classical_sig_len;
       index += classical_sig_len;
     }
+    if(is_composite){
+      size_t actual_oqs_sig_len = 0;
+      DECODE_UINT32(actual_oqs_sig_len, sig);
+      if (OQS_SIG_verify(oqs_key, tbs, tbslen, sig + SIZE_OF_UINT32, actual_oqs_sig_len, oqsxkey->comp_pubkey[oqsxkey->numkeys-2]) != OQS_SUCCESS) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_VERIFY_ERROR);
+        goto endverify;
+      }
 
-    if (!oqsxkey->comp_pubkey[oqsxkey->numkeys-1]) {
-      ERR_raise(ERR_LIB_USER, OQSPROV_R_WRONG_PARAMETERS);
-      goto endverify;
-    }
-    if (OQS_SIG_verify(oqs_key, tbs, tbslen, sig + index, siglen - classical_sig_len, oqsxkey->comp_pubkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
-      ERR_raise(ERR_LIB_USER, OQSPROV_R_VERIFY_ERROR);
-      goto endverify;
-    }
+      oqs_sig_len = SIZE_OF_UINT32 + actual_oqs_sig_len;
+      index += oqs_sig_len;
+
+      if (OQS_SIG_verify(cmp_key, tbs, tbslen, sig + index, siglen - oqs_sig_len, oqsxkey->comp_pubkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_VERIFY_ERROR);
+        goto endverify;
+      }
+
+
+    } else {
+      if (!oqsxkey->comp_pubkey[oqsxkey->numkeys-1]) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_WRONG_PARAMETERS);
+        goto endverify;
+      }
+      if (OQS_SIG_verify(oqs_key, tbs, tbslen, sig + index, siglen - classical_sig_len, oqsxkey->comp_pubkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
+        ERR_raise(ERR_LIB_USER, OQSPROV_R_VERIFY_ERROR);
+        goto endverify;
+      }
+  }
     rv = 1;
 
  endverify:
@@ -485,7 +567,7 @@ int oqs_sig_digest_signverify_update(void *vpoqs_sigctx, const unsigned char *da
 	memcpy(poqs_sigctx->mddata, data, poqs_sigctx->mdsize);
     }
     OQS_SIG_PRINTF2("OQS SIG provider: digest_signverify_update collected %ld bytes...\n", poqs_sigctx->mdsize);
-    if (poqs_sigctx->mdctx) 
+    if (poqs_sigctx->mdctx)
     	return EVP_DigestUpdate(poqs_sigctx->mdctx, data, datalen);
     return 1;
 }
@@ -518,11 +600,11 @@ int oqs_sig_digest_sign_final(void *vpoqs_sigctx, unsigned char *sig, size_t *si
 
     poqs_sigctx->flag_allow_md = 1;
 
-    if (poqs_sigctx->mdctx != NULL) 
+    if (poqs_sigctx->mdctx != NULL)
 	return oqs_sig_sign(vpoqs_sigctx, sig, siglen, sigsize, digest, (size_t)dlen);
     else
 	return oqs_sig_sign(vpoqs_sigctx, sig, siglen, sigsize, poqs_sigctx->mddata, poqs_sigctx->mdsize);
-	
+
 }
 
 
@@ -546,7 +628,7 @@ int oqs_sig_digest_verify_final(void *vpoqs_sigctx, const unsigned char *sig,
 
     	return oqs_sig_verify(vpoqs_sigctx, sig, siglen, digest, (size_t)dlen);
     }
-    else 
+    else
     	return oqs_sig_verify(vpoqs_sigctx, sig, siglen, poqs_sigctx->mddata, poqs_sigctx->mdsize);
 }
 
