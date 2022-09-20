@@ -87,7 +87,7 @@ static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
        { 0, "sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_SIG, 128 },
        { 0, "p256_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
        { 0, "rsa3072_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
-       { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, KEY_TYPE_CMP_SIG, 128 }
+       { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, KEY_TYPE_CMP_SIG, 128 },
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_END
 };
 
@@ -96,9 +96,11 @@ int oqs_set_nid(char* tlsname, int nid) {
    for(i=0;i<NID_TABLE_LEN;i++) {
       if (!strcmp(nid_names[i].tlsname, tlsname)) {
           nid_names[i].nid = nid;
+          printf("%s nid: %d\n", tlsname, nid_names[i].nid);
           return 1;
       }
    }
+   printf("%s nid: %d\n", tlsname, nid_names[i].nid);
    return 0;
 }
 
@@ -609,7 +611,6 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, cha
 
 	break;
     default:
-        printf("OQSX_KEY: Unknown key type encountered: %d\n", primitive);
         OQS_KEY_PRINTF2("OQSX_KEY: Unknown key type encountered: %d\n", primitive);
 	goto err;
     }
@@ -627,7 +628,7 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, cha
             goto err;
     }
 
-    OQS_KEY_PRINTF2("OQSX_KEY: new key created: %p\n", ret);
+    printf("OQSX_KEY: new key created: %p\n", ret);
     return ret;
 err:
     ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
@@ -644,7 +645,6 @@ void oqsx_key_free(OQSX_KEY *key)
 
     refcnt = atomic_fetch_sub_explicit(&key->references, 1,
                                        memory_order_relaxed) - 1;
-    printf("HERE\n");
     if (refcnt == 0)
         atomic_thread_fence(memory_order_acquire);
     OQS_KEY_PRINTF3("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
@@ -683,7 +683,6 @@ int oqsx_key_up_ref(OQSX_KEY *key)
                                        memory_order_relaxed) + 1;
 
     OQS_KEY_PRINTF3("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
-    printf("%p:%4d:OQSX_KEY\n", (void*)key, refcnt);
 #ifndef NDEBUG
     assert(refcnt > 1);
 #endif
@@ -864,9 +863,10 @@ int oqsx_key_gen(OQSX_KEY *key)
            ret = oqsx_key_gen_oqs(key, 1);
 	}
 } else if (key->keytype == KEY_TYPE_SIG || key->keytype == KEY_TYPE_CMP_SIG) {
-        ret = oqsx_key_set_composites(key);
+        ret = oqsx_key_set_composites(key); // 1
         ON_ERR_GOTO(ret, err);
-        ret = oqsx_key_gen_oqs(key, 0);
+        ret = oqsx_key_gen_oqs(key, 0); // 18
+        printf("ret = %i\n", ret);
     } else {
         ret = 1;
     }

@@ -67,6 +67,7 @@ typedef int write_bio_of_void_fn(BIO *bp, const void *x);
 /* Free the blob allocated during key_to_paramstring_fn */
 static void free_asn1_data(int type, void *data)
 {
+  printf("e1\n" );
     switch(type) {
     case V_ASN1_OBJECT:
         ASN1_OBJECT_free(data);
@@ -81,6 +82,7 @@ static PKCS8_PRIV_KEY_INFO *key_to_p8info(const void *key, int key_nid,
                                           void *params, int params_type,
                                           i2d_of_void *k2d)
 {
+    printf("e2\n" );
     /* der, derlen store the key DER output and its length */
     unsigned char *der = NULL;
     int derlen;
@@ -93,9 +95,9 @@ static PKCS8_PRIV_KEY_INFO *key_to_p8info(const void *key, int key_nid,
         || (derlen = k2d(key, &der)) <= 0
         || !PKCS8_pkey_set0(p8info, OBJ_nid2obj(key_nid), 0,
 			// doesn't work with oqs-openssl:
-                        //  params_type, params, 
+                        //  params_type, params,
 			// does work/interop:
-			    V_ASN1_UNDEF, NULL, 
+			    V_ASN1_UNDEF, NULL,
 			    der, derlen)) {
         ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
         PKCS8_PRIV_KEY_INFO_free(p8info);
@@ -109,6 +111,7 @@ static PKCS8_PRIV_KEY_INFO *key_to_p8info(const void *key, int key_nid,
 static X509_SIG *p8info_to_encp8(PKCS8_PRIV_KEY_INFO *p8info,
                                  struct key2any_ctx_st *ctx)
 {
+    printf("e3\n" );
     X509_SIG *p8 = NULL;
     char kstr[PEM_BUFSIZE];
     size_t klen = 0;
@@ -133,6 +136,7 @@ static X509_SIG *key_to_encp8(const void *key, int key_nid,
                               void *params, int params_type,
                               i2d_of_void *k2d, struct key2any_ctx_st *ctx)
 {
+    printf("e4\n" );
     PKCS8_PRIV_KEY_INFO *p8info =
         key_to_p8info(key, key_nid, params, params_type, k2d);
     X509_SIG *p8 = NULL;
@@ -152,6 +156,7 @@ static X509_PUBKEY *oqsx_key_to_pubkey(const void *key, int key_nid,
                                   void *params, int params_type,
                                   i2d_of_void k2d)
 {
+    printf("e5\n" );
     /* der, derlen store the key DER output and its length */
     unsigned char *der = NULL;
     int derlen;
@@ -200,6 +205,7 @@ static int key_to_epki_der_priv_bio(BIO *out, const void *key,
                                     i2d_of_void *k2d,
                                     struct key2any_ctx_st *ctx)
 {
+    printf("e6\n" );
     int ret = 0;
     void *str = NULL;
     int strtype = V_ASN1_UNDEF;
@@ -230,6 +236,7 @@ static int key_to_epki_pem_priv_bio(BIO *out, const void *key,
                                     i2d_of_void *k2d,
                                     struct key2any_ctx_st *ctx)
 {
+    printf("e7\n" );
     int ret = 0;
     void *str = NULL;
     int strtype = V_ASN1_UNDEF;
@@ -260,6 +267,7 @@ static int key_to_pki_der_priv_bio(BIO *out, const void *key,
                                    i2d_of_void *k2d,
                                    struct key2any_ctx_st *ctx)
 {
+    printf("e8\n" );
     int ret = 0;
     void *str = NULL;
     int strtype = V_ASN1_UNDEF;
@@ -294,6 +302,7 @@ static int key_to_pki_pem_priv_bio(BIO *out, const void *key,
                                    i2d_of_void *k2d,
                                    struct key2any_ctx_st *ctx)
 {
+    printf("e9\n" );
     int ret = 0;
     void *str = NULL;
     int strtype = V_ASN1_UNDEF;
@@ -328,6 +337,7 @@ static int key_to_spki_der_pub_bio(BIO *out, const void *key,
                                    i2d_of_void *k2d,
                                    struct key2any_ctx_st *ctx)
 {
+    printf("e10\n" );
     int ret = 0;
     OQSX_KEY* okey = (OQSX_KEY*)key;
     X509_PUBKEY *xpk = NULL;
@@ -356,6 +366,7 @@ static int key_to_spki_pem_pub_bio(BIO *out, const void *key,
                                    i2d_of_void *k2d,
                                    struct key2any_ctx_st *ctx)
 {
+    printf("e11\n" );
     int ret = 0;
     X509_PUBKEY *xpk = NULL;
     void *str = NULL;
@@ -474,6 +485,7 @@ static int key_to_type_specific_pem_param_bio(BIO *out, const void *key,
 static int prepare_oqsx_params(const void *oqsxkey, int nid, int save,
                              void **pstr, int *pstrtype)
 {
+    printf("e12\n" );
     ASN1_OBJECT *params = NULL;
     OQSX_KEY *k = (OQSX_KEY*)oqsxkey;
 
@@ -493,7 +505,7 @@ static int prepare_oqsx_params(const void *oqsxkey, int nid, int save,
         ERR_raise(ERR_LIB_USER, OQSPROV_R_MISSING_OID);
         return 0;
     }
-    
+
 
     if (OBJ_length(params) == 0) {
             /* unexpected error */
@@ -511,6 +523,7 @@ static int prepare_oqsx_params(const void *oqsxkey, int nid, int save,
 
 static int oqsx_spki_pub_to_der(const void *vecxkey, unsigned char **pder)
 {
+    printf("e13\n" );
     const OQSX_KEY *oqsxkey = vecxkey;
     unsigned char *keyblob;
 
@@ -533,6 +546,7 @@ static int oqsx_spki_pub_to_der(const void *vecxkey, unsigned char **pder)
 
 static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
 {
+    printf("e14\n" );
     const OQSX_KEY *oqsxkey = vecxkey;
     unsigned char* buf = NULL;
     int buflen = 0;
@@ -541,8 +555,8 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
 
     OQS_ENC_PRINTF("OQS ENC provider: oqsx_pki_priv_to_der called\n");
 
-    // Encoding private _and_ public key concatenated ... seems unlogical and unnecessary, 
-    // but is what oqs-openssl does, so we repeat it for interop... also from a security 
+    // Encoding private _and_ public key concatenated ... seems unlogical and unnecessary,
+    // but is what oqs-openssl does, so we repeat it for interop... also from a security
     // perspective not really smart to copy key material (side channel attacks, anyone?),
     // but so be it for now (TBC).
     if (oqsxkey == NULL || oqsxkey->privkey == NULL || oqsxkey->pubkey == NULL) {
@@ -702,6 +716,9 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
 # define rsa3072_sphincsshake256128frobust_evp_type       0
 # define rsa3072_sphincsshake256128frobust_input_type      "rsa3072_sphincsshake256128frobust"
 # define rsa3072_sphincsshake256128frobust_pem_type        "rsa3072_sphincsshake256128frobust"
+# define dilithium5_falcon1024_evp_type       0
+# define dilithium5_falcon1024_input_type      "dilithium5_falcon1024"
+# define dilithium5_falcon1024_pem_type        "dilithium5_falcon1024"
 ///// OQS_TEMPLATE_FRAGMENT_ENCODER_DEFINES_END
 
 /* ---------------------------------------------------------------------- */
@@ -711,6 +728,7 @@ static OSSL_FUNC_decoder_freectx_fn key2any_freectx;
 
 static void *key2any_newctx(void *provctx)
 {
+    printf("e15\n" );
     struct key2any_ctx_st *ctx = OPENSSL_zalloc(sizeof(*ctx));
 
     OQS_ENC_PRINTF("OQS ENC provider: key2any_newctx called\n");
@@ -725,6 +743,7 @@ static void *key2any_newctx(void *provctx)
 
 static void key2any_freectx(void *vctx)
 {
+    printf("e16\n" );
     struct key2any_ctx_st *ctx = vctx;
 
     OQS_ENC_PRINTF("OQS ENC provider: key2any_freectx called\n");
@@ -735,6 +754,7 @@ static void key2any_freectx(void *vctx)
 
 static const OSSL_PARAM *key2any_settable_ctx_params(ossl_unused void *provctx)
 {
+    printf("e17\n" );
     static const OSSL_PARAM settables[] = {
         OSSL_PARAM_utf8_string(OSSL_ENCODER_PARAM_CIPHER, NULL, 0),
         OSSL_PARAM_utf8_string(OSSL_ENCODER_PARAM_PROPERTIES, NULL, 0),
@@ -748,6 +768,7 @@ static const OSSL_PARAM *key2any_settable_ctx_params(ossl_unused void *provctx)
 
 static int key2any_set_ctx_params(void *vctx, const OSSL_PARAM params[])
 {
+    printf("e18\n" );
     struct key2any_ctx_st *ctx = vctx;
     OSSL_LIB_CTX *libctx = ctx->provctx->libctx;
     const OSSL_PARAM *cipherp =
@@ -784,12 +805,13 @@ static int key2any_set_ctx_params(void *vctx, const OSSL_PARAM params[])
             return 0;
 	}
     }
-    OQS_ENC_PRINTF2(" cipher set to %p: \n", ctx->cipher);
+    printf(" cipher set to %p: \n", ctx->cipher);
     return 1;
 }
 
 static int key2any_check_selection(int selection, int selection_mask)
 {
+    printf("e19\n" );
     /*
      * The selections are kinda sorta "levels", i.e. each selection given
      * here is assumed to include those following.
@@ -832,16 +854,19 @@ static int key2any_encode(struct key2any_ctx_st *ctx, OSSL_CORE_BIO *cout,
                           key_to_paramstring_fn *key2paramstring,
                           i2d_of_void *key2der)
 {
+    printf("e20\n" );
     int ret = 0;
     int type = OBJ_sn2nid(typestr);
     OQSX_KEY *oqsk = (OQSX_KEY*)key;
 
-    OQS_ENC_PRINTF3("OQS ENC provider: key2any_encode called with type %d (%s)\n", type, typestr);
+    printf("OQS ENC provider: key2any_encode called with type %d (%s)\n", type, typestr);
     OQS_ENC_PRINTF2("OQS ENC provider: key2any_encode called with pemname %s\n", pemname);
 
     if (key == NULL || type <= 0) {
         ERR_raise(ERR_LIB_USER, ERR_R_PASSED_NULL_PARAMETER);
+        printf("HERE\n" );
     } else if (writer != NULL) {
+      printf("NO, HERE\n" );
         // Is ref counting really needed? For now, do it as per https://beta.openssl.org/docs/manmaster/man3/BIO_new_from_core_bio.html:
         BIO *out = oqs_bio_new_from_core_bio(ctx->provctx, cout);
 
@@ -856,7 +881,8 @@ static int key2any_encode(struct key2any_ctx_st *ctx, OSSL_CORE_BIO *cout,
     } else {
         ERR_raise(ERR_LIB_USER, ERR_R_PASSED_INVALID_ARGUMENT);
     }
-    OQS_ENC_PRINTF2(" encode result: %d\n", ret);
+    printf(" encode result: %d\n", ret);
+//    OQS_ENC_PRINTF2(" encode result: %d\n", ret);
     return ret;
 }
 
@@ -1303,5 +1329,10 @@ MAKE_ENCODER(rsa3072_sphincsshake256128frobust, oqsx, PrivateKeyInfo, der);
 MAKE_ENCODER(rsa3072_sphincsshake256128frobust, oqsx, PrivateKeyInfo, pem);
 MAKE_ENCODER(rsa3072_sphincsshake256128frobust, oqsx, SubjectPublicKeyInfo, der);
 MAKE_ENCODER(rsa3072_sphincsshake256128frobust, oqsx, SubjectPublicKeyInfo, pem);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, EncryptedPrivateKeyInfo, der);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, EncryptedPrivateKeyInfo, pem);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, PrivateKeyInfo, der);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, PrivateKeyInfo, pem);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, SubjectPublicKeyInfo, der);
+MAKE_ENCODER(dilithium5_falcon1024, oqsx, SubjectPublicKeyInfo, pem);
 ///// OQS_TEMPLATE_FRAGMENT_ENCODER_MAKE_END
-

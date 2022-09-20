@@ -67,6 +67,7 @@ static OSSL_FUNC_signature_settable_ctx_md_params_fn oqs_sig_settable_ctx_md_par
 static int get_aid(unsigned char** oidbuf, const char *tls_name) {
    X509_ALGOR *algor = X509_ALGOR_new();
    int aidlen = 0;
+   printf("tls: %s\n", tls_name);
 
    X509_ALGOR_set0(algor, OBJ_txt2obj(tls_name, 0), V_ASN1_UNDEF, NULL);
 
@@ -206,7 +207,6 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
     EVP_PKEY* evpkey = oqsxkey->classical_pkey; // if this value is not NULL, we're running hybrid
     EVP_PKEY_CTX *classical_ctx_sign = NULL;
 
-    printf("OQS SIG provider: sign called for %ld bytes\n", tbslen);
     OQS_SIG_PRINTF2("OQS SIG provider: sign called for %ld bytes\n", tbslen);
 
     int is_hybrid = evpkey!=NULL;
@@ -307,25 +307,19 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
     }
 
     if (is_composite){
-      printf("A\n");
       if (OQS_SIG_sign(oqs_key, sig + SIZE_OF_UINT32, &actual_oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-2]) != OQS_SUCCESS) {
         ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
         goto endsign;
       }
 
-      printf("B\n" );
-
       ENCODE_UINT32(sig, actual_oqs_sig_len);
       oqs_sig_len = SIZE_OF_UINT32 + actual_oqs_sig_len;
       index += oqs_sig_len;
-
-      printf("C\n" );
 
       if (OQS_SIG_sign(cmp_key, sig + index, &cmp_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
         ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
         goto endsign;
       }
-      printf("D\n" );
     } else if (OQS_SIG_sign(oqs_key, sig + index, &oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[oqsxkey->numkeys-1]) != OQS_SUCCESS) {
               ERR_raise(ERR_LIB_USER, OQSPROV_R_SIGNING_FAILED);
               goto endsign;
@@ -333,7 +327,6 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
 
 
     *siglen = classical_sig_len + oqs_sig_len + cmp_sig_len;
-    printf("OQS SIG provider: signing completes with size %ld\n", *siglen);
     OQS_SIG_PRINTF2("OQS SIG provider: signing completes with size %ld\n", *siglen);
     rv = 1; /* success */
 

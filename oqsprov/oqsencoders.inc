@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 AND MIT
 
-/* 
+/*
  * OQS OpenSSL 3 provider encoders
- * 
+ *
  * Code strongly inspired by OpenSSL default provider.
  *
  */
@@ -284,6 +284,10 @@ ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256
 ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256128frobust, der, EncryptedPrivateKeyInfo),
 ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256128frobust, pem, EncryptedPrivateKeyInfo),
 ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256128frobust, der, SubjectPublicKeyInfo),
-ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256128frobust, pem, SubjectPublicKeyInfo),
+ENCODER_w_structure("rsa3072_sphincsshake256128frobust", rsa3072_sphincsshake256128frobust, pem, SubjectPublicKeyInfo),ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, der, PrivateKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, PrivateKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, der, EncryptedPrivateKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, EncryptedPrivateKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, der, SubjectPublicKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, SubjectPublicKeyInfo),
 ///// OQS_TEMPLATE_FRAGMENT_MAKE_END
-

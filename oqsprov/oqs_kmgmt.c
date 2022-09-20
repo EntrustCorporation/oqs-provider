@@ -393,7 +393,7 @@ static const OSSL_PARAM *oqsx_settable_params(void *provctx)
     return oqs_settable_params;
 }
 
-static void *oqsx_gen_init(void *provctx, int selection, char* oqs_name, char* tls_name, int primitive, int bit_security)
+static void *oqsx_gen_init(void *provctx, int selection, char* oqs_name, char* cmp_name, char* tls_name, int primitive, int bit_security)
 {
     OSSL_LIB_CTX *libctx = PROV_OQS_LIBCTX_OF(provctx);
     struct oqsx_gen_ctx *gctx = NULL;
@@ -405,16 +405,9 @@ static void *oqsx_gen_init(void *provctx, int selection, char* oqs_name, char* t
     if ((gctx = OPENSSL_zalloc(sizeof(*gctx))) != NULL) {
         gctx->libctx = libctx;
         gctx->cmp_name = NULL;
-        if (primitive != KEY_TYPE_CMP_SIG)
-          gctx->oqs_name = OPENSSL_strdup(oqs_name);
-        else {
-          char* cmp_name = malloc(sizeof(oqs_name) + 1);
-          strcpy(cmp_name,oqs_name);
-          cmp_name = strtok(cmp_name, "_");
-          gctx->oqs_name = OPENSSL_strdup(cmp_name);
-          cmp_name = strtok (NULL, "_");
+        gctx->oqs_name = OPENSSL_strdup(oqs_name);
+        if (primitive == KEY_TYPE_CMP_SIG)
           gctx->cmp_name = OPENSSL_strdup(cmp_name);
-        }
         gctx->tls_name = OPENSSL_strdup(tls_name);
         gctx->primitive = primitive;
         gctx->selection = selection;
@@ -524,7 +517,7 @@ static void *dilithium2_new_key(void *provctx)
 
 static void *dilithium2_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, "dilithium2", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, NULL, "dilithium2", 0, 128);
 }
 static void *p256_dilithium2_new_key(void *provctx)
 {
@@ -533,7 +526,7 @@ static void *p256_dilithium2_new_key(void *provctx)
 
 static void *p256_dilithium2_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, "p256_dilithium2", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, NULL,  "p256_dilithium2", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_dilithium2_new_key(void *provctx)
 {
@@ -542,7 +535,7 @@ static void *rsa3072_dilithium2_new_key(void *provctx)
 
 static void *rsa3072_dilithium2_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, "rsa3072_dilithium2", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, NULL,  "rsa3072_dilithium2", KEY_TYPE_HYB_SIG, 128);
 }
 static void *dilithium3_new_key(void *provctx)
 {
@@ -551,7 +544,7 @@ static void *dilithium3_new_key(void *provctx)
 
 static void *dilithium3_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3, "dilithium3", 0, 192);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3, NULL,  "dilithium3", 0, 192);
 }
 static void *p384_dilithium3_new_key(void *provctx)
 {
@@ -560,7 +553,7 @@ static void *p384_dilithium3_new_key(void *provctx)
 
 static void *p384_dilithium3_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3, "p384_dilithium3", KEY_TYPE_HYB_SIG, 192);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3, NULL,  "p384_dilithium3", KEY_TYPE_HYB_SIG, 192);
 }
 static void *dilithium5_new_key(void *provctx)
 {
@@ -569,7 +562,7 @@ static void *dilithium5_new_key(void *provctx)
 
 static void *dilithium5_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, "dilithium5", 0, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, NULL,  "dilithium5", 0, 256);
 }
 static void *p521_dilithium5_new_key(void *provctx)
 {
@@ -578,7 +571,7 @@ static void *p521_dilithium5_new_key(void *provctx)
 
 static void *p521_dilithium5_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, "p521_dilithium5", KEY_TYPE_HYB_SIG, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, NULL,  "p521_dilithium5", KEY_TYPE_HYB_SIG, 256);
 }
 static void *dilithium2_aes_new_key(void *provctx)
 {
@@ -587,7 +580,7 @@ static void *dilithium2_aes_new_key(void *provctx)
 
 static void *dilithium2_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, "dilithium2_aes", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, NULL,  "dilithium2_aes", 0, 128);
 }
 static void *p256_dilithium2_aes_new_key(void *provctx)
 {
@@ -596,7 +589,7 @@ static void *p256_dilithium2_aes_new_key(void *provctx)
 
 static void *p256_dilithium2_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, "p256_dilithium2_aes", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, NULL,  "p256_dilithium2_aes", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_dilithium2_aes_new_key(void *provctx)
 {
@@ -605,7 +598,7 @@ static void *rsa3072_dilithium2_aes_new_key(void *provctx)
 
 static void *rsa3072_dilithium2_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, "rsa3072_dilithium2_aes", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2_aes, NULL,  "rsa3072_dilithium2_aes", KEY_TYPE_HYB_SIG, 128);
 }
 static void *dilithium3_aes_new_key(void *provctx)
 {
@@ -614,7 +607,7 @@ static void *dilithium3_aes_new_key(void *provctx)
 
 static void *dilithium3_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3_aes, "dilithium3_aes", 0, 192);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3_aes, NULL,  "dilithium3_aes", 0, 192);
 }
 static void *p384_dilithium3_aes_new_key(void *provctx)
 {
@@ -623,7 +616,7 @@ static void *p384_dilithium3_aes_new_key(void *provctx)
 
 static void *p384_dilithium3_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3_aes, "p384_dilithium3_aes", KEY_TYPE_HYB_SIG, 192);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_3_aes, NULL,  "p384_dilithium3_aes", KEY_TYPE_HYB_SIG, 192);
 }
 static void *dilithium5_aes_new_key(void *provctx)
 {
@@ -632,7 +625,7 @@ static void *dilithium5_aes_new_key(void *provctx)
 
 static void *dilithium5_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5_aes, "dilithium5_aes", 0, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5_aes, NULL,  "dilithium5_aes", 0, 256);
 }
 static void *p521_dilithium5_aes_new_key(void *provctx)
 {
@@ -641,7 +634,7 @@ static void *p521_dilithium5_aes_new_key(void *provctx)
 
 static void *p521_dilithium5_aes_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5_aes, "p521_dilithium5_aes", KEY_TYPE_HYB_SIG, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5_aes, NULL,  "p521_dilithium5_aes", KEY_TYPE_HYB_SIG, 256);
 }
 
 static void *falcon512_new_key(void *provctx)
@@ -651,7 +644,7 @@ static void *falcon512_new_key(void *provctx)
 
 static void *falcon512_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, "falcon512", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, NULL,  "falcon512", 0, 128);
 }
 static void *p256_falcon512_new_key(void *provctx)
 {
@@ -660,7 +653,7 @@ static void *p256_falcon512_new_key(void *provctx)
 
 static void *p256_falcon512_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, "p256_falcon512", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, NULL,  "p256_falcon512", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_falcon512_new_key(void *provctx)
 {
@@ -669,7 +662,7 @@ static void *rsa3072_falcon512_new_key(void *provctx)
 
 static void *rsa3072_falcon512_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, "rsa3072_falcon512", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_512, NULL,  "rsa3072_falcon512", KEY_TYPE_HYB_SIG, 128);
 }
 static void *falcon1024_new_key(void *provctx)
 {
@@ -678,7 +671,7 @@ static void *falcon1024_new_key(void *provctx)
 
 static void *falcon1024_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_1024, "falcon1024", 0, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_1024, NULL,  "falcon1024", 0, 256);
 }
 static void *p521_falcon1024_new_key(void *provctx)
 {
@@ -687,7 +680,7 @@ static void *p521_falcon1024_new_key(void *provctx)
 
 static void *p521_falcon1024_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_1024, "p521_falcon1024", KEY_TYPE_HYB_SIG, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_falcon_1024, NULL,  "p521_falcon1024", KEY_TYPE_HYB_SIG, 256);
 }
 
 static void *picnicl1full_new_key(void *provctx)
@@ -697,7 +690,7 @@ static void *picnicl1full_new_key(void *provctx)
 
 static void *picnicl1full_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, "picnicl1full", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, NULL,  "picnicl1full", 0, 128);
 }
 static void *p256_picnicl1full_new_key(void *provctx)
 {
@@ -706,7 +699,7 @@ static void *p256_picnicl1full_new_key(void *provctx)
 
 static void *p256_picnicl1full_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, "p256_picnicl1full", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, NULL,  "p256_picnicl1full", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_picnicl1full_new_key(void *provctx)
 {
@@ -715,7 +708,7 @@ static void *rsa3072_picnicl1full_new_key(void *provctx)
 
 static void *rsa3072_picnicl1full_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, "rsa3072_picnicl1full", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic_L1_full, NULL,  "rsa3072_picnicl1full", KEY_TYPE_HYB_SIG, 128);
 }
 static void *picnic3l1_new_key(void *provctx)
 {
@@ -724,7 +717,7 @@ static void *picnic3l1_new_key(void *provctx)
 
 static void *picnic3l1_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, "picnic3l1", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, NULL,  "picnic3l1", 0, 128);
 }
 static void *p256_picnic3l1_new_key(void *provctx)
 {
@@ -733,7 +726,7 @@ static void *p256_picnic3l1_new_key(void *provctx)
 
 static void *p256_picnic3l1_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, "p256_picnic3l1", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, NULL,  "p256_picnic3l1", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_picnic3l1_new_key(void *provctx)
 {
@@ -742,7 +735,7 @@ static void *rsa3072_picnic3l1_new_key(void *provctx)
 
 static void *rsa3072_picnic3l1_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, "rsa3072_picnic3l1", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, NULL,  "rsa3072_picnic3l1", KEY_TYPE_HYB_SIG, 128);
 }
 
 static void *rainbowIclassic_new_key(void *provctx)
@@ -752,7 +745,7 @@ static void *rainbowIclassic_new_key(void *provctx)
 
 static void *rainbowIclassic_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, "rainbowIclassic", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "rainbowIclassic", 0, 128);
 }
 static void *p256_rainbowIclassic_new_key(void *provctx)
 {
@@ -761,7 +754,7 @@ static void *p256_rainbowIclassic_new_key(void *provctx)
 
 static void *p256_rainbowIclassic_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, "p256_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "p256_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_rainbowIclassic_new_key(void *provctx)
 {
@@ -770,7 +763,7 @@ static void *rsa3072_rainbowIclassic_new_key(void *provctx)
 
 static void *rsa3072_rainbowIclassic_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, "rsa3072_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "rsa3072_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rainbowVclassic_new_key(void *provctx)
 {
@@ -779,7 +772,7 @@ static void *rainbowVclassic_new_key(void *provctx)
 
 static void *rainbowVclassic_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_V_classic, "rainbowVclassic", 0, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_V_classic, NULL,  "rainbowVclassic", 0, 256);
 }
 static void *p521_rainbowVclassic_new_key(void *provctx)
 {
@@ -788,7 +781,7 @@ static void *p521_rainbowVclassic_new_key(void *provctx)
 
 static void *p521_rainbowVclassic_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_V_classic, "p521_rainbowVclassic", KEY_TYPE_HYB_SIG, 256);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_V_classic, NULL,  "p521_rainbowVclassic", KEY_TYPE_HYB_SIG, 256);
 }
 
 static void *sphincsharaka128frobust_new_key(void *provctx)
@@ -798,7 +791,7 @@ static void *sphincsharaka128frobust_new_key(void *provctx)
 
 static void *sphincsharaka128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, "sphincsharaka128frobust", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, NULL,  "sphincsharaka128frobust", 0, 128);
 }
 static void *p256_sphincsharaka128frobust_new_key(void *provctx)
 {
@@ -807,7 +800,7 @@ static void *p256_sphincsharaka128frobust_new_key(void *provctx)
 
 static void *p256_sphincsharaka128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, "p256_sphincsharaka128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, NULL,  "p256_sphincsharaka128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_sphincsharaka128frobust_new_key(void *provctx)
 {
@@ -816,7 +809,7 @@ static void *rsa3072_sphincsharaka128frobust_new_key(void *provctx)
 
 static void *rsa3072_sphincsharaka128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, "rsa3072_sphincsharaka128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_haraka_128f_robust, NULL,  "rsa3072_sphincsharaka128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 
 static void *sphincssha256128frobust_new_key(void *provctx)
@@ -826,7 +819,7 @@ static void *sphincssha256128frobust_new_key(void *provctx)
 
 static void *sphincssha256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, "sphincssha256128frobust", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, NULL,  "sphincssha256128frobust", 0, 128);
 }
 static void *p256_sphincssha256128frobust_new_key(void *provctx)
 {
@@ -835,7 +828,7 @@ static void *p256_sphincssha256128frobust_new_key(void *provctx)
 
 static void *p256_sphincssha256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, "p256_sphincssha256128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, NULL,  "p256_sphincssha256128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_sphincssha256128frobust_new_key(void *provctx)
 {
@@ -844,7 +837,7 @@ static void *rsa3072_sphincssha256128frobust_new_key(void *provctx)
 
 static void *rsa3072_sphincssha256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, "rsa3072_sphincssha256128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_sha256_128f_robust, NULL,  "rsa3072_sphincssha256128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 
 static void *sphincsshake256128frobust_new_key(void *provctx)
@@ -854,7 +847,7 @@ static void *sphincsshake256128frobust_new_key(void *provctx)
 
 static void *sphincsshake256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, "sphincsshake256128frobust", 0, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, NULL,  "sphincsshake256128frobust", 0, 128);
 }
 static void *p256_sphincsshake256128frobust_new_key(void *provctx)
 {
@@ -863,7 +856,7 @@ static void *p256_sphincsshake256128frobust_new_key(void *provctx)
 
 static void *p256_sphincsshake256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, "p256_sphincsshake256128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, NULL,  "p256_sphincsshake256128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 static void *rsa3072_sphincsshake256128frobust_new_key(void *provctx)
 {
@@ -872,7 +865,7 @@ static void *rsa3072_sphincsshake256128frobust_new_key(void *provctx)
 
 static void *rsa3072_sphincsshake256128frobust_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, "rsa3072_sphincsshake256128frobust", KEY_TYPE_HYB_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_sphincs_shake256_128f_robust, NULL,  "rsa3072_sphincsshake256128frobust", KEY_TYPE_HYB_SIG, 128);
 }
 
 static void *dilithium5_falcon1024_new_key(void *provctx)
@@ -882,7 +875,7 @@ static void *dilithium5_falcon1024_new_key(void *provctx)
 
 static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium5_falcon1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
 }
 
 ///// OQS_TEMPLATE_FRAGMENT_KEYMGMT_CONSTRUCTORS_END
@@ -920,7 +913,7 @@ static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
                                                       \
     static void *tokalg##_gen_init(void *provctx, int selection) \
     { \
-        return oqsx_gen_init(provctx, selection, tokoqsalg, "" #tokalg "", KEY_TYPE_KEM, bit_security); \
+        return oqsx_gen_init(provctx, selection, tokoqsalg, NULL, "" #tokalg "", KEY_TYPE_KEM, bit_security); \
     }                                                 \
                                                       \
     const OSSL_DISPATCH oqs_##tokalg##_keymgmt_functions[] = { \
@@ -952,7 +945,7 @@ static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
                                                       \
     static void *ecp_##tokalg##_gen_init(void *provctx, int selection) \
     { \
-        return oqsx_gen_init(provctx, selection, tokoqsalg, ECP_NAME(bit_security, tokalg), KEY_TYPE_ECP_HYB_KEM, bit_security); \
+        return oqsx_gen_init(provctx, selection, tokoqsalg, NULL, ECP_NAME(bit_security, tokalg), KEY_TYPE_ECP_HYB_KEM, bit_security); \
     } \
                                                       \
     const OSSL_DISPATCH oqs_ecp_##tokalg##_keymgmt_functions[] = { \
@@ -984,7 +977,7 @@ static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
                                                       \
     static void *ecx_##tokalg##_gen_init(void *provctx, int selection) \
     { \
-        return oqsx_gen_init(provctx, selection, tokoqsalg, ECX_NAME(bit_security, tokalg), KEY_TYPE_ECX_HYB_KEM, bit_security); \
+        return oqsx_gen_init(provctx, selection, tokoqsalg, NULL, ECX_NAME(bit_security, tokalg), KEY_TYPE_ECX_HYB_KEM, bit_security); \
     } \
                                                       \
     const OSSL_DISPATCH oqs_ecx_##tokalg##_keymgmt_functions[] = { \

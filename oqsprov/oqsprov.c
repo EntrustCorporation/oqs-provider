@@ -84,7 +84,7 @@ static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 "1.3.9999.6.7.1", "sphincsshake256128frobust",
 "1.3.9999.6.7.2" , "p256_sphincsshake256128frobust",
 "1.3.9999.6.7.3" , "rsa3072_sphincsshake256128frobust",
-"1.3" , "dilithium5_falcon1024"                             //TDB: understand the logic of this numbers
+"1.3.9999.6.7.4" , "dilithium5_falcon1024",                             //TDB: understand the logic of this numbers
 
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_END
 };
@@ -401,6 +401,7 @@ int OSSL_provider_init(const OSSL_CORE_HANDLE *handle,
 
     // insert all OIDs to the global objects list
     for (i=0; i<OQS_OID_CNT;i+=2) {
+      printf("%s - %s\n", oqs_oid_alg_list[i], oqs_oid_alg_list[i+1]);
 	if (!c_obj_create(handle, oqs_oid_alg_list[i], oqs_oid_alg_list[i+1], oqs_oid_alg_list[i+1]))
                 ERR_raise(ERR_LIB_USER, OQSPROV_R_OBJ_CREATE_ERR);
 
