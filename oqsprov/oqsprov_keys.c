@@ -100,7 +100,6 @@ int oqs_set_nid(char* tlsname, int nid) {
           return 1;
       }
    }
-   printf("%s nid: %d\n", tlsname, nid_names[i].nid);
    return 0;
 }
 
@@ -113,7 +112,7 @@ static int get_secbits(int nid) {
    return 0;
 }
 
-static int get_keytype(int nid) {
+int get_keytype(int nid) {
    int i;
    for(i=0;i<NID_TABLE_LEN;i++) {
       if (nid_names[i].nid == nid)
@@ -122,7 +121,18 @@ static int get_keytype(int nid) {
    return 0;
 }
 
-static char* get_oqsname(int nid) {
+char* get_tlsname_fromoqs(char* oqsname) {
+   int i;
+   for(i=0;i<NID_TABLE_LEN;i++) {
+        if (nid_names[i].keytype ==  KEY_TYPE_SIG){
+            if (!strcmp(nid_names[i].oqsname, oqsname)) 
+                return nid_names[i].tlsname;
+        }
+   }
+   return 0;
+}
+
+char* get_oqsname(int nid) {
    int i;
    for(i=0;i<NID_TABLE_LEN;i++) {
       if (nid_names[i].nid == nid)
@@ -131,7 +141,7 @@ static char* get_oqsname(int nid) {
    return 0;
 }
 
-static char* get_cmpname(int nid) {
+char* get_cmpname(int nid) {
    int i;
    for(i=0;i<NID_TABLE_LEN;i++) {
       if (nid_names[i].nid == nid)
@@ -756,8 +766,8 @@ printf("18\n");
 	if (gen_kem)
 		return OQS_KEM_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.kem, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]);
 	else {
-    if (key->keytype == KEY_TYPE_CMP_SIG)
-      return -(OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-2], key->comp_privkey[key->numkeys-2]) ||
+        if (key->keytype == KEY_TYPE_CMP_SIG)
+        return -(OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-2], key->comp_privkey[key->numkeys-2]) ||
               OQS_SIG_keypair(key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]));
 
 		return OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig, key->comp_pubkey[key->numkeys-1], key->comp_privkey[key->numkeys-1]);

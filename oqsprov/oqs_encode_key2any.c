@@ -28,6 +28,7 @@
 //#include "prov/bio.h"
 #include <string.h>
 #include "oqs_endecoder_local.h"
+#include "oqs_prov.h"
 
 #ifdef NDEBUG
 #define OQS_ENC_PRINTF(a)
@@ -303,10 +304,11 @@ static int key_to_pki_pem_priv_bio(BIO *out, const void *key,
                                    struct key2any_ctx_st *ctx)
 {
     printf("e9\n" );
-    int ret = 0;
-    void *str = NULL;
+    int ret = 0, cmp_len = 0;
+    void *str = NULL, *strc = NULL;
     int strtype = V_ASN1_UNDEF;
-    PKCS8_PRIV_KEY_INFO *p8info;
+    int strtypec = V_ASN1_UNDEF;
+    PKCS8_PRIV_KEY_INFO *p8info, *p8infoc;
 
     OQS_ENC_PRINTF("OQS ENC provider: key_to_pki_pem_priv_bio called\n");
 
@@ -318,12 +320,11 @@ static int key_to_pki_pem_priv_bio(BIO *out, const void *key,
                             &str, &strtype))
         return 0;
 
-    p8info = key_to_p8info(key, key_nid, str, strtype, k2d);
-
-    if (p8info != NULL)
-        ret = PEM_write_bio_PKCS8_PRIV_KEY_INFO(out, p8info);
-    else
-        free_asn1_data(strtype, str);
+        p8info = key_to_p8info(key, key_nid, str, strtype, k2d);
+        if (p8info != NULL)
+            ret = PEM_write_bio_PKCS8_PRIV_KEY_INFO(out, p8info);
+        else
+            free_asn1_data(strtype, str);
 
     PKCS8_PRIV_KEY_INFO_free(p8info);
 
@@ -496,6 +497,9 @@ static int prepare_oqsx_params(const void *oqsxkey, int nid, int save,
         return 0;
     }
 
+    if (k->keytype == KEY_TYPE_CMP_SIG)
+      printf("AAAAAAAAAAAA\n" ); //oqsx_provider_ctx_cmp
+
     if (nid != NID_undef) {
         params = OBJ_nid2obj(nid);
         if (params == NULL)
@@ -551,7 +555,7 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
     unsigned char* buf = NULL;
     int buflen = 0;
     ASN1_OCTET_STRING oct;
-    int keybloblen;
+    int keybloblen, keybloblenc;
 
     OQS_ENC_PRINTF("OQS ENC provider: oqsx_pki_priv_to_der called\n");
 
@@ -564,25 +568,75 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         return 0;
     }
 
-    buflen = oqsxkey->privkeylen+oqsxkey->pubkeylen;
-    buf = OPENSSL_secure_malloc(buflen);
-    OQS_ENC_PRINTF2("OQS ENC provider: saving priv+pubkey of length %d\n", buflen);
-    memcpy(buf, oqsxkey->privkey, oqsxkey->privkeylen);
-    memcpy(buf+oqsxkey->privkeylen, oqsxkey->pubkey, oqsxkey->pubkeylen);
 
-    oct.data = buf;
-    oct.length = buflen;
-    // more logical:
-    //oct.data = oqsxkey->privkey;
-    //oct.length = oqsxkey->privkeylen;
-    oct.flags = 0;
+    if (oqsxkey->keytype != KEY_TYPE_CMP_SIG){
+        buflen = oqsxkey->privkeylen+oqsxkey->pubkeylen;
+        buf = OPENSSL_secure_malloc(buflen);
+        OQS_ENC_PRINTF2("OQS ENC provider: saving priv+pubkey of length %d\n", buflen);
+        memcpy(buf, oqsxkey->privkey, oqsxkey->privkeylen);
+        memcpy(buf+oqsxkey->privkeylen, oqsxkey->pubkey, oqsxkey->pubkeylen);
 
-    keybloblen = i2d_ASN1_OCTET_STRING(&oct, pder);
-    if (keybloblen < 0) {
-        ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
-        keybloblen = 0; // signal error
+        oct.data = buf;
+        oct.length = buflen;
+        // more logical:
+        //oct.data = oqsxkey->privkey;
+        //oct.length = oqsxkey->privkeylen;
+        oct.flags = 0;
+
+        keybloblen = i2d_ASN1_OCTET_STRING(&oct, pder);
+        if (keybloblen < 0) {
+            ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
+            keybloblen = 0; // signal error
+        }
+    }else{
+        STACK_OF(ASN1_TYPE) *sk = sk_ASN1_TYPE_new_null();
+        ASN1_TYPE *aType = ASN1_TYPE_new();
+        unsigned char *temp = NULL;
+        
+
+        buflen = oqsxkey->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key+oqsxkey->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key;
+        buf = OPENSSL_secure_malloc(buflen);
+        memcpy(buf, oqsxkey->comp_privkey[0], oqsxkey->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key);
+        memcpy(buf+oqsxkey->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key, oqsxkey->comp_pubkey[0], oqsxkey->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key);
+        
+        oct.data = buf;
+        oct.length = buflen;
+        oct.flags = 0;       
+
+        keybloblen = i2d_ASN1_OCTET_STRING(&oct, pder);
+        if (keybloblen < 0) {
+            ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
+            keybloblen = 0; // signal error
+        }
+        ASN1_TYPE_set(aType, V_ASN1_SEQUENCE, pder);
+
+        if (!sk_ASN1_TYPE_push(sk, aType))
+            return -1;
+
+        temp = NULL;
+        aType = ASN1_TYPE_new();
+
+        buflen = oqsxkey->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key+oqsxkey->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
+        buf = OPENSSL_secure_malloc(buflen);
+        memcpy(buf, oqsxkey->comp_privkey[1], oqsxkey->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key);
+        memcpy(buf+oqsxkey->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key, oqsxkey->comp_pubkey[1], oqsxkey->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key);
+        
+        oct.data = buf;
+        oct.length = buflen;
+        oct.flags = 0;       
+
+        keybloblen = i2d_ASN1_OCTET_STRING(&oct, pder);
+        if (keybloblen < 0) {
+            ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
+            keybloblen = 0; // signal error
+        }
+        ASN1_TYPE_set(aType, V_ASN1_SEQUENCE, pder);
+
+        if (!sk_ASN1_TYPE_push(sk, aType))
+            return -1;
+
+        keybloblen = i2d_ASN1_SEQUENCE_ANY(sk, pder);
     }
-
     OPENSSL_secure_clear_free(buf, buflen);
     return keybloblen;
 }
@@ -870,12 +924,18 @@ static int key2any_encode(struct key2any_ctx_st *ctx, OSSL_CORE_BIO *cout,
         // Is ref counting really needed? For now, do it as per https://beta.openssl.org/docs/manmaster/man3/BIO_new_from_core_bio.html:
         BIO *out = oqs_bio_new_from_core_bio(ctx->provctx, cout);
 
-        if (out != NULL) {
+      if (out != NULL) {
 	    ctx->pwcb = pwcb;
 	    ctx->pwcbarg = pwcbarg;
 
-            ret = writer(out, key, type, pemname, key2paramstring, key2der, ctx);
-	}
+
+      printf("B %p, %d, %s\n", key, type, pemname);
+      printf("%d\n", oqsk->keytype != KEY_TYPE_CMP_SIG);
+
+
+      ret = writer(out, key, type, pemname, key2paramstring, key2der, ctx);
+
+	   }
 
         BIO_free(out);
     } else {
