@@ -45,7 +45,7 @@ typedef struct {
 } oqs_nid_name_t;
 
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_START
-#define NID_TABLE_LEN 40
+#define NID_TABLE_LEN 41
 
 static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
        { 0, "dilithium2", OQS_SIG_alg_dilithium_2, NULL, KEY_TYPE_SIG, 128 },
@@ -88,6 +88,7 @@ static oqs_nid_name_t nid_names[NID_TABLE_LEN] = {
        { 0, "p256_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
        { 0, "rsa3072_sphincsshake256128frobust", OQS_SIG_alg_sphincs_shake256_128f_robust, NULL, KEY_TYPE_HYB_SIG, 128 },
        { 0, "dilithium5_falcon1024", OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, KEY_TYPE_CMP_SIG, 128 },
+       { 0, "id_pk_example_ECandRSA", "EVP_PKEY-EC","EVP_PKEY-RSA", KEY_TYPE_CMP_SIG, 128 },
 ///// OQS_TEMPLATE_FRAGMENT_OQSNAMES_END
 };
 
@@ -615,8 +616,10 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char* oqs_name, char* cmp_name, cha
         ret->numkeys = 2;
         ret->comp_privkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
         ret->comp_pubkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
-        ret->privkeylen = (ret->numkeys-1) * SIZE_OF_UINT32 + ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key;
-        ret->pubkeylen = (ret->numkeys-1) * SIZE_OF_UINT32 + ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key + ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
+        ret->privkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key;
+        ret->pubkeylen = ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key;
+        ret->privkeylen_cmp = ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_secret_key;
+        ret->pubkeylen_cmp = ret->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_public_key;
         ret->keytype = primitive;
 
 	break;

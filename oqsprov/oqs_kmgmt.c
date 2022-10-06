@@ -878,6 +878,16 @@ static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
     return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
 }
 
+static void *id_pk_example_ECandRSA_new_key(void *provctx)
+{
+    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), "EVP_PKEY-EC","EVP_PKEY-RSA", "id_pk_example_ECandRSA", KEY_TYPE_CMP_SIG, NULL, 128);
+}
+
+static void *id_pk_example_ECandRSA_gen_init(void *provctx, int selection)
+{
+    return oqsx_gen_init(provctx, selection, "EVP_PKEY-EC","EVP_PKEY-RSA", "id_pk_example_ECandRSA", KEY_TYPE_CMP_SIG, 128);
+}
+
 ///// OQS_TEMPLATE_FRAGMENT_KEYMGMT_CONSTRUCTORS_END
 
 #define MAKE_SIG_KEYMGMT_FUNCTIONS(alg) \
@@ -1043,6 +1053,7 @@ MAKE_SIG_KEYMGMT_FUNCTIONS(sphincsshake256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(p256_sphincsshake256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_sphincsshake256128frobust)
 MAKE_SIG_KEYMGMT_FUNCTIONS(dilithium5_falcon1024)
+MAKE_SIG_KEYMGMT_FUNCTIONS(id_pk_example_ECandRSA)
 
 MAKE_KEM_KEYMGMT_FUNCTIONS(frodo640aes, OQS_KEM_alg_frodokem_640_aes, 128)
 MAKE_KEM_KEYMGMT_FUNCTIONS(frodo640shake, OQS_KEM_alg_frodokem_640_shake, 128)
