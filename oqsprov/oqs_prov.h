@@ -141,6 +141,8 @@ struct oqsx_key_st {
      */
     size_t privkeylen;
     size_t pubkeylen;
+    size_t privkeylen_cmp;
+    size_t pubkeylen_cmp;
     size_t bit_security;
     char *oqs_name;
     char *tls_name;
@@ -502,6 +504,13 @@ extern const OSSL_DISPATCH oqs_dilithium5_falcon1024_to_SubjectPublicKeyInfo_der
 extern const OSSL_DISPATCH oqs_dilithium5_falcon1024_to_SubjectPublicKeyInfo_pem_encoder_functions[];
 extern const OSSL_DISPATCH oqs_PrivateKeyInfo_der_to_dilithium5_falcon1024_decoder_functions[];
 extern const OSSL_DISPATCH oqs_SubjectPublicKeyInfo_der_to_dilithium5_falcon1024_decoder_functions[];
+extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_to_PrivateKeyInfo_pem_encoder_functions[];
+extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_to_EncryptedPrivateKeyInfo_der_encoder_functions[];
+extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_to_EncryptedPrivateKeyInfo_pem_encoder_functions[];
+extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_to_SubjectPublicKeyInfo_der_encoder_functions[];
+extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_to_SubjectPublicKeyInfo_pem_encoder_functions[];
+extern const OSSL_DISPATCH oqs_PrivateKeyInfo_der_to_id_pk_example_ECandRSA_decoder_functions[];
+extern const OSSL_DISPATCH oqs_SubjectPublicKeyInfo_der_to_id_pk_example_ECandRSA_decoder_functions[];
 ///// OQS_TEMPLATE_FRAGMENT_ENDECODER_FUNCTIONS_END
 
 ///// OQS_TEMPLATE_FRAGMENT_ALG_FUNCTIONS_START
@@ -520,7 +529,7 @@ extern const OSSL_DISPATCH oqs_rainbowVclassic_keymgmt_functions[];extern const 
 extern const OSSL_DISPATCH oqs_sphincsharaka128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_p256_sphincsharaka128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_rsa3072_sphincsharaka128frobust_keymgmt_functions[];
 extern const OSSL_DISPATCH oqs_sphincssha256128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_p256_sphincssha256128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_rsa3072_sphincssha256128frobust_keymgmt_functions[];
 extern const OSSL_DISPATCH oqs_sphincsshake256128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_p256_sphincsshake256128frobust_keymgmt_functions[];extern const OSSL_DISPATCH oqs_rsa3072_sphincsshake256128frobust_keymgmt_functions[];
-extern const OSSL_DISPATCH oqs_dilithium5_falcon1024_keymgmt_functions[];
+extern const OSSL_DISPATCH oqs_dilithium5_falcon1024_keymgmt_functions[];extern const OSSL_DISPATCH oqs_id_pk_example_ECandRSA_keymgmt_functions[];
 
 extern const OSSL_DISPATCH oqs_frodo640aes_keymgmt_functions[];
 extern const OSSL_DISPATCH oqs_frodo640shake_keymgmt_functions[];
