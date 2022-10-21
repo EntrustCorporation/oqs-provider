@@ -609,7 +609,6 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         oct.data = buf;
         oct.length = buflen;
         oct.flags = 0;
-
         if (!PKCS8_pkey_set0(p8info_internal, OBJ_nid2obj(OBJ_sn2nid(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))))), 0, V_ASN1_UNDEF, NULL, buf, buflen))
             keybloblen = 0; // signal error           
         keybloblen = i2d_PKCS8_PRIV_KEY_INFO(p8info_internal, &temp);
@@ -792,9 +791,9 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
 # define dilithium5_falcon1024_evp_type       0
 # define dilithium5_falcon1024_input_type      "dilithium5_falcon1024"
 # define dilithium5_falcon1024_pem_type        "dilithium5_falcon1024"
-# define id_pk_example_ECandRSA_evp_type       0
-# define id_pk_example_ECandRSA_input_type      "id_pk_example_ECandRSA"
-# define id_pk_example_ECandRSA_pem_type        "id_pk_example_ECandRSA"
+# define p521_rsa3072_evp_type       0
+# define p521_rsa3072_input_type      "p521_rsa3072"
+# define p521_rsa3072_pem_type        "p521_rsa3072"
 ///// OQS_TEMPLATE_FRAGMENT_ENCODER_DEFINES_END
 
 /* ---------------------------------------------------------------------- */
