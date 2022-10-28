@@ -289,5 +289,10 @@ ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, Private
 ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, der, EncryptedPrivateKeyInfo),
 ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, EncryptedPrivateKeyInfo),
 ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, der, SubjectPublicKeyInfo),
-ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, SubjectPublicKeyInfo),
+ENCODER_w_structure("dilithium5_falcon1024", dilithium5_falcon1024, pem, SubjectPublicKeyInfo),ENCODER_w_structure("p521_rsa3072", p521_rsa3072, der, PrivateKeyInfo),
+ENCODER_w_structure("p521_rsa3072", p521_rsa3072, pem, PrivateKeyInfo),
+ENCODER_w_structure("p521_rsa3072", p521_rsa3072, der, EncryptedPrivateKeyInfo),
+ENCODER_w_structure("p521_rsa3072", p521_rsa3072, pem, EncryptedPrivateKeyInfo),
+ENCODER_w_structure("p521_rsa3072", p521_rsa3072, der, SubjectPublicKeyInfo),
+ENCODER_w_structure("p521_rsa3072", p521_rsa3072, pem, SubjectPublicKeyInfo),
 ///// OQS_TEMPLATE_FRAGMENT_MAKE_END

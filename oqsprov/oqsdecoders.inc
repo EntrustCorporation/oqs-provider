@@ -84,5 +84,6 @@ DECODER_w_structure("rsa3072_sphincssha256128frobust", der, SubjectPublicKeyInfo
 DECODER_w_structure("sphincsshake256128frobust", der, PrivateKeyInfo, sphincsshake256128frobust),
 DECODER_w_structure("sphincsshake256128frobust", der, SubjectPublicKeyInfo, sphincsshake256128frobust),DECODER_w_structure("p256_sphincsshake256128frobust", der, PrivateKeyInfo, p256_sphincsshake256128frobust),
 DECODER_w_structure("p256_sphincsshake256128frobust", der, SubjectPublicKeyInfo, p256_sphincsshake256128frobust),DECODER_w_structure("rsa3072_sphincsshake256128frobust", der, PrivateKeyInfo, rsa3072_sphincsshake256128frobust),
-DECODER_w_structure("rsa3072_sphincsshake256128frobust", der, SubjectPublicKeyInfo, rsa3072_sphincsshake256128frobust),
+DECODER_w_structure("rsa3072_sphincsshake256128frobust", der, SubjectPublicKeyInfo, rsa3072_sphincsshake256128frobust),DECODER_w_structure("dilithium5_falcon1024", der, SubjectPublicKeyInfo, dilithium5_falcon1024),
+DECODER_w_structure("p521_rsa3072", der, SubjectPublicKeyInfo, p521_rsa3072),
 ///// OQS_TEMPLATE_FRAGMENT_MAKE_END
