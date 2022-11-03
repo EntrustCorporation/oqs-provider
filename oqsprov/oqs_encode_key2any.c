@@ -609,18 +609,21 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         oct.data = buf;
         oct.length = buflen;
         oct.flags = 0;
-        if (!PKCS8_pkey_set0(p8info_internal, OBJ_nid2obj(OBJ_sn2nid(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))))), 0, V_ASN1_UNDEF, NULL, buf, buflen))
-            keybloblen = 0; // signal error           
-        keybloblen = i2d_PKCS8_PRIV_KEY_INFO(p8info_internal, &temp);
-        if (keybloblen < 0) {
-            ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
-            keybloblen = 0; // signal error
-        }
+        if(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))) == 0){
+            temp = buf;
+            keybloblen = buflen;
+        }else{
+            if (!PKCS8_pkey_set0(p8info_internal, OBJ_nid2obj(OBJ_sn2nid(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))))), 0, V_ASN1_UNDEF, NULL, buf, buflen))
+                keybloblen = 0; // signal error     
+            keybloblen = i2d_PKCS8_PRIV_KEY_INFO(p8info_internal, &temp);
+            if (keybloblen < 0) {
+                ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
+                keybloblen = 0; // signal error
+            } 
+        }     
 
         ASN1_STRING_set0(aString, temp, keybloblen);
         ASN1_TYPE_set(aType, V_ASN1_SEQUENCE, aString);
-
-
 
         if (!sk_ASN1_TYPE_push(sk, aType))
             return -1;
@@ -639,14 +642,19 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         oct.length = buflen;
         oct.flags = 0;
 
-        if (!PKCS8_pkey_set0(p8info_internal, OBJ_nid2obj(OBJ_sn2nid(get_tlsname_fromoqs(get_cmpname(OBJ_sn2nid(oqsxkey->tls_name))))), 0, V_ASN1_UNDEF, NULL, buf, buflen))
-            keybloblen = 0; // signal error
-        keybloblen = i2d_PKCS8_PRIV_KEY_INFO(p8info_internal, &temp);
-        if (keybloblen < 0) {
-            ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
-            keybloblen = 0; // signal error
+        if(get_tlsname_fromoqs(get_cmpname(OBJ_sn2nid(oqsxkey->tls_name))) == 0){
+            temp = buf;
+            keybloblen = buflen;
+        }else{
+            if (!PKCS8_pkey_set0(p8info_internal, OBJ_nid2obj(OBJ_sn2nid(get_tlsname_fromoqs(get_cmpname(OBJ_sn2nid(oqsxkey->tls_name))))), 0, V_ASN1_UNDEF, NULL, buf, buflen))
+                keybloblen = 0; // signal error
+            keybloblen = i2d_PKCS8_PRIV_KEY_INFO(p8info_internal, &temp);
+            if (keybloblen < 0) {
+                ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
+                keybloblen = 0; // signal error
+            }
         }
-
+        
         ASN1_STRING_set0(aString, temp, keybloblen);
         ASN1_TYPE_set(aType, V_ASN1_SEQUENCE, aString);
 
@@ -1416,4 +1424,10 @@ MAKE_ENCODER(dilithium5_falcon1024, oqsx, PrivateKeyInfo, der);
 MAKE_ENCODER(dilithium5_falcon1024, oqsx, PrivateKeyInfo, pem);
 MAKE_ENCODER(dilithium5_falcon1024, oqsx, SubjectPublicKeyInfo, der);
 MAKE_ENCODER(dilithium5_falcon1024, oqsx, SubjectPublicKeyInfo, pem);
+MAKE_ENCODER(p521_rsa3072, oqsx, EncryptedPrivateKeyInfo, der);
+MAKE_ENCODER(p521_rsa3072, oqsx, EncryptedPrivateKeyInfo, pem);
+MAKE_ENCODER(p521_rsa3072, oqsx, PrivateKeyInfo, der);
+MAKE_ENCODER(p521_rsa3072, oqsx, PrivateKeyInfo, pem);
+MAKE_ENCODER(p521_rsa3072, oqsx, SubjectPublicKeyInfo, der);
+MAKE_ENCODER(p521_rsa3072, oqsx, SubjectPublicKeyInfo, pem);
 ///// OQS_TEMPLATE_FRAGMENT_ENCODER_MAKE_END

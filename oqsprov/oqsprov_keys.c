@@ -958,7 +958,7 @@ int oqsx_key_maxsize(OQSX_KEY *key) {
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature;
     case KEY_TYPE_HYB_SIG:
 	return key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature + key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->length_signature+SIZE_OF_UINT32;
-    case KEY_TYPE_CMP_SIG:
+    case KEY_TYPE_CMP_SIG:{
     int aux = 0;
     if (get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(key->tls_name))) == 0)
         aux += key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->length_signature + SIZE_OF_UINT32;
@@ -969,6 +969,7 @@ int oqsx_key_maxsize(OQSX_KEY *key) {
     else
         aux += key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig->length_signature;
     return  aux;
+    }
     default:
 	OQS_KEY_PRINTF("OQSX KEY: Wrong key type\n");
 	return 0;
