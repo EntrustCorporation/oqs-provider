@@ -133,6 +133,7 @@ struct oqsx_key_st {
     OQSX_KEY_TYPE keytype;
     OQSX_PROVIDER_CTX oqsx_provider_ctx;
     OQSX_PROVIDER_CTX oqsx_provider_ctx_cmp;
+    EVP_PKEY** cmp_classical_pkey;
     EVP_PKEY *classical_pkey; // for hybrid sigs
     const OQSX_EVP_INFO *evp_info;
     size_t numkeys;
