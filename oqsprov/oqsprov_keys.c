@@ -712,11 +712,18 @@ void oqsx_key_free(OQSX_KEY *key)
         EVP_PKEY_free(key->oqsx_provider_ctx.oqsx_evp_ctx->keyParam);
         OPENSSL_free(key->oqsx_provider_ctx.oqsx_evp_ctx);
     } else if(key->keytype == KEY_TYPE_CMP_SIG){
-        OQS_SIG_free(key->oqsx_provider_ctx.oqsx_qs_ctx.sig);
-        OQS_SIG_free(key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig);
+        if (key->oqsx_provider_ctx.oqsx_qs_ctx.sig == NULL)
+            OPENSSL_free(key->oqsx_provider_ctx.oqsx_evp_ctx);
+        else
+            OQS_SIG_free(key->oqsx_provider_ctx.oqsx_qs_ctx.sig);
+        if (key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig == NULL)
+            OPENSSL_free(key->oqsx_provider_ctx_cmp.oqsx_evp_ctx);
+        else
+            OQS_SIG_free(key->oqsx_provider_ctx_cmp.oqsx_qs_ctx.sig);
     } else
         OQS_SIG_free(key->oqsx_provider_ctx.oqsx_qs_ctx.sig);
     OPENSSL_free(key->classical_pkey);
+    OPENSSL_free(key->cmp_classical_pkey);
     OPENSSL_free(key);
 }
 

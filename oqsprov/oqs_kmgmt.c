@@ -870,12 +870,12 @@ static void *rsa3072_sphincsshake256128frobust_gen_init(void *provctx, int selec
 
 static void *dilithium5_falcon1024_new_key(void *provctx)
 {
-    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_dilithium_2, OQS_SIG_alg_falcon_512, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, NULL, 128);
+    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, NULL, 128);
 }
 
 static void *dilithium5_falcon1024_gen_init(void *provctx, int selection)
 {
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_2, OQS_SIG_alg_falcon_512, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
+    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_dilithium_5, OQS_SIG_alg_falcon_1024, "dilithium5_falcon1024", KEY_TYPE_CMP_SIG, 128);
 }
 
 static void *p521_rsa3072_new_key(void *provctx)
