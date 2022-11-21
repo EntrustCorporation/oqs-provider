@@ -738,33 +738,6 @@ static void *rsa3072_picnic3l1_gen_init(void *provctx, int selection)
     return oqsx_gen_init(provctx, selection, OQS_SIG_alg_picnic3_L1, NULL,  "rsa3072_picnic3l1", KEY_TYPE_HYB_SIG, 128);
 }
 
-static void *rainbowIclassic_new_key(void *provctx)
-{
-    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_rainbow_I_classic, NULL, "rainbowIclassic", KEY_TYPE_SIG, NULL, 128);
-}
-
-static void *rainbowIclassic_gen_init(void *provctx, int selection)
-{
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "rainbowIclassic", 0, 128);
-}
-static void *p256_rainbowIclassic_new_key(void *provctx)
-{
-    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_rainbow_I_classic, NULL, "p256_rainbowIclassic", KEY_TYPE_HYB_SIG, NULL, 128);
-}
-
-static void *p256_rainbowIclassic_gen_init(void *provctx, int selection)
-{
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "p256_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
-}
-static void *rsa3072_rainbowIclassic_new_key(void *provctx)
-{
-    return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_rainbow_I_classic, NULL, "rsa3072_rainbowIclassic", KEY_TYPE_HYB_SIG, NULL, 128);
-}
-
-static void *rsa3072_rainbowIclassic_gen_init(void *provctx, int selection)
-{
-    return oqsx_gen_init(provctx, selection, OQS_SIG_alg_rainbow_I_classic, NULL,  "rsa3072_rainbowIclassic", KEY_TYPE_HYB_SIG, 128);
-}
 static void *rainbowVclassic_new_key(void *provctx)
 {
     return oqsx_key_new(PROV_OQS_LIBCTX_OF(provctx), OQS_SIG_alg_rainbow_V_classic, NULL, "rainbowVclassic", KEY_TYPE_SIG, NULL, 256);
@@ -1038,9 +1011,6 @@ MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_picnicl1full)
 MAKE_SIG_KEYMGMT_FUNCTIONS(picnic3l1)
 MAKE_SIG_KEYMGMT_FUNCTIONS(p256_picnic3l1)
 MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_picnic3l1)
-MAKE_SIG_KEYMGMT_FUNCTIONS(rainbowIclassic)
-MAKE_SIG_KEYMGMT_FUNCTIONS(p256_rainbowIclassic)
-MAKE_SIG_KEYMGMT_FUNCTIONS(rsa3072_rainbowIclassic)
 MAKE_SIG_KEYMGMT_FUNCTIONS(rainbowVclassic)
 MAKE_SIG_KEYMGMT_FUNCTIONS(p521_rainbowVclassic)
 MAKE_SIG_KEYMGMT_FUNCTIONS(sphincsharaka128frobust)
@@ -1073,14 +1043,6 @@ MAKE_KEM_KEYMGMT_FUNCTIONS(ntru_hrss1373, OQS_KEM_alg_ntru_hrss1373, 256)
 MAKE_KEM_KEYMGMT_FUNCTIONS(lightsaber, OQS_KEM_alg_saber_lightsaber, 128)
 MAKE_KEM_KEYMGMT_FUNCTIONS(saber, OQS_KEM_alg_saber_saber, 192)
 MAKE_KEM_KEYMGMT_FUNCTIONS(firesaber, OQS_KEM_alg_saber_firesaber, 256)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sidhp434, OQS_KEM_alg_sidh_p434, 128)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sidhp503, OQS_KEM_alg_sidh_p503, 128)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sidhp610, OQS_KEM_alg_sidh_p610, 192)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sidhp751, OQS_KEM_alg_sidh_p751, 256)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sikep434, OQS_KEM_alg_sike_p434, 128)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sikep503, OQS_KEM_alg_sike_p503, 128)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sikep610, OQS_KEM_alg_sike_p610, 192)
-MAKE_KEM_KEYMGMT_FUNCTIONS(sikep751, OQS_KEM_alg_sike_p751, 256)
 MAKE_KEM_KEYMGMT_FUNCTIONS(bikel1, OQS_KEM_alg_bike_l1, 128)
 MAKE_KEM_KEYMGMT_FUNCTIONS(bikel3, OQS_KEM_alg_bike_l3, 192)
 MAKE_KEM_KEYMGMT_FUNCTIONS(kyber90s512, OQS_KEM_alg_kyber_512_90s, 128)
