@@ -330,7 +330,7 @@ static int key_to_pki_pem_priv_bio(BIO *out, const void *key,
 
     return ret;
 }
-
+//certificate encoding
 static int key_to_spki_der_pub_bio(BIO *out, const void *key,
                                    int key_nid,
                                    ossl_unused const char *pemname,
@@ -606,9 +606,6 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         memcpy(buf, oqsxkey->comp_privkey[0], oqsxkey->privkeylen);
         memcpy(buf + oqsxkey->privkeylen, oqsxkey->comp_pubkey[0], oqsxkey->pubkeylen);
 
-        oct.data = buf;
-        oct.length = buflen;
-        oct.flags = 0;
         if(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))) == 0)
             nid = oqsxkey->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->nid;
         else
@@ -636,10 +633,6 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         buf = OPENSSL_secure_malloc(buflen);
         memcpy(buf, oqsxkey->comp_privkey[1], oqsxkey->privkeylen_cmp);
         memcpy(buf + oqsxkey->privkeylen_cmp, oqsxkey->comp_pubkey[1], oqsxkey->pubkeylen_cmp);
-
-        oct.data = buf;
-        oct.length = buflen;
-        oct.flags = 0;
 
         if(get_tlsname_fromoqs(get_cmpname(OBJ_sn2nid(oqsxkey->tls_name))) == 0)
             nid = oqsxkey->oqsx_provider_ctx_cmp.oqsx_evp_ctx->evp_info->nid;
