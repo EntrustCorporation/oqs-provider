@@ -661,5 +661,14 @@ MAKE_DECODER("dilithium5_falcon1024", dilithium5_falcon1024, oqsx, PrivateKeyInf
 MAKE_DECODER("dilithium5_falcon1024", dilithium5_falcon1024, oqsx, SubjectPublicKeyInfo);
 MAKE_DECODER("p521_rsa3072", p521_rsa3072, oqsx, PrivateKeyInfo);
 MAKE_DECODER("p521_rsa3072", p521_rsa3072, oqsx, SubjectPublicKeyInfo);
+
+MAKE_DECODER("dilithium3_rsa3072", dilithium3_rsa3072, oqsx, PrivateKeyInfo);
+MAKE_DECODER("dilithium3_rsa3072", dilithium3_rsa3072, oqsx, SubjectPublicKeyInfo);
+
+MAKE_DECODER("dilithium3_p256", dilithium3_p256, oqsx, PrivateKeyInfo);
+MAKE_DECODER("dilithium3_p256", dilithium3_p256, oqsx, SubjectPublicKeyInfo);
+
+MAKE_DECODER("falcon512_p256", falcon512_p256, oqsx, PrivateKeyInfo);
+MAKE_DECODER("falcon512_p256", falcon512_p256, oqsx, SubjectPublicKeyInfo);
 ///// OQS_TEMPLATE_FRAGMENT_DECODER_MAKE_END
 

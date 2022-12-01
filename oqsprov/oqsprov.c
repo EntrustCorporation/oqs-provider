@@ -42,7 +42,7 @@ extern OSSL_FUNC_provider_get_capabilities_fn oqs_provider_get_capabilities;
  * List of all algorithms with given OIDs
  */
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_START
-#define OQS_OID_CNT 76
+#define OQS_OID_CNT 82
 static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 {
 "1.3.6.1.4.1.2.267.7.4.4", "dilithium2",
@@ -82,7 +82,10 @@ static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 "1.3.9999.6.7.2" , "p256_sphincsshake256128frobust",
 "1.3.9999.6.7.3" , "rsa3072_sphincsshake256128frobust",
 "1.3.9999.6.7.4" , "dilithium5_falcon1024",       
-"1.3.9999.6.7.5" , "p521_rsa3072",                       
+"1.3.9999.6.7.5" , "p521_rsa3072",   
+"2.16.840.1.114027.80.5.2", "dilithium3_rsa3072",
+"2.16.840.1.114027.80.5.1", "dilithium3_p256", 
+"2.16.840.1.114027.80.5.3", "falcon512_p256",                     
 
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_END
 };
@@ -157,6 +160,9 @@ static const OSSL_ALGORITHM oqsprovider_signatures[] = {
     ALG("rsa3072_sphincsshake256128frobust", oqs_signature_functions),
     ALG("dilithium5_falcon1024", oqs_signature_functions),
     ALG("p521_rsa3072", oqs_signature_functions),
+    ALG("dilithium3_rsa3072", oqs_signature_functions),
+    ALG("dilithium3_p256", oqs_signature_functions),
+    ALG("falcon512_p256", oqs_signature_functions),
     
 
 ///// OQS_TEMPLATE_FRAGMENT_SIG_FUNCTIONS_END
@@ -219,7 +225,11 @@ static const OSSL_ALGORITHM oqsprovider_keymgmt[] = {
     ALG("sphincsharaka128frobust", oqs_sphincsharaka128frobust_keymgmt_functions),ALG("p256_sphincsharaka128frobust", oqs_p256_sphincsharaka128frobust_keymgmt_functions),ALG("rsa3072_sphincsharaka128frobust", oqs_rsa3072_sphincsharaka128frobust_keymgmt_functions),
     ALG("sphincssha256128frobust", oqs_sphincssha256128frobust_keymgmt_functions),ALG("p256_sphincssha256128frobust", oqs_p256_sphincssha256128frobust_keymgmt_functions),ALG("rsa3072_sphincssha256128frobust", oqs_rsa3072_sphincssha256128frobust_keymgmt_functions),
     ALG("sphincsshake256128frobust", oqs_sphincsshake256128frobust_keymgmt_functions),ALG("p256_sphincsshake256128frobust", oqs_p256_sphincsshake256128frobust_keymgmt_functions),ALG("rsa3072_sphincsshake256128frobust", oqs_rsa3072_sphincsshake256128frobust_keymgmt_functions),
-    ALG("dilithium5_falcon1024", oqs_dilithium5_falcon1024_keymgmt_functions),ALG("p521_rsa3072", oqs_p521_rsa3072_keymgmt_functions),
+    ALG("dilithium5_falcon1024", oqs_dilithium5_falcon1024_keymgmt_functions),
+    ALG("p521_rsa3072", oqs_p521_rsa3072_keymgmt_functions),
+    ALG("dilithium3_rsa3072", oqs_dilithium3_rsa3072_keymgmt_functions),
+    ALG("dilithium3_p256", oqs_dilithium3_p256_keymgmt_functions),
+    ALG("falcon512_p256", oqs_falcon512_p256_keymgmt_functions),
 
 
     KEMKMALG3(frodo640aes, 128),
