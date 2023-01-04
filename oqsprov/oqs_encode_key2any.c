@@ -575,7 +575,7 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
 
 
     if (oqsxkey->keytype != KEY_TYPE_CMP_SIG){
-        buflen = oqsxkey->privkeylen+oqsxkey->pubkeylen;
+        buflen = oqsxkey->privkeylen + oqsxkey->pubkeylen;
         buf = OPENSSL_secure_malloc(buflen);
         OQS_ENC_PRINTF2("OQS ENC provider: saving priv+pubkey of length %d\n", buflen);
         memcpy(buf, oqsxkey->privkey, oqsxkey->privkeylen);
@@ -601,10 +601,10 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         aType = ASN1_TYPE_new();
         aString = ASN1_OCTET_STRING_new();
 
-        buflen = oqsxkey->privkeylen + oqsxkey->pubkeylen;
+        buflen = oqsxkey->privkeylen + oqsxkey->pubkeylen - oqsxkey->privkeylen_cmp - oqsxkey->pubkeylen_cmp;
         buf = OPENSSL_secure_malloc(buflen);
-        memcpy(buf, oqsxkey->comp_privkey[0], oqsxkey->privkeylen);
-        memcpy(buf + oqsxkey->privkeylen, oqsxkey->comp_pubkey[0], oqsxkey->pubkeylen);
+        memcpy(buf, oqsxkey->comp_privkey[0], oqsxkey->privkeylen - oqsxkey->privkeylen_cmp);
+        memcpy(buf + oqsxkey->privkeylen - oqsxkey->privkeylen_cmp, oqsxkey->comp_pubkey[0], oqsxkey->pubkeylen - oqsxkey->pubkeylen_cmp);
 
         if(get_tlsname_fromoqs(get_oqsname(OBJ_sn2nid(oqsxkey->tls_name))) == 0)
             nid = oqsxkey->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->nid;

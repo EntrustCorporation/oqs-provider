@@ -371,9 +371,15 @@ static int oqs_der2key_decode(void *vctx, OSSL_CORE_BIO *cin, int selection,
                                              (char *)ctx->desc->keytype_name,
                                              0);
         /* The address of the key becomes the octet string */
-        params[2] =
-            OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
-                                              &key, sizeof(key));
+        if (get_keytype(OBJ_sn2nid(ctx->desc->keytype_name)) != KEY_TYPE_CMP_SIG){
+            params[2] =
+                OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
+                                                &key, sizeof(key));
+        }else{
+            params[2] =
+                OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
+                                                &key, sizeof(key));
+        }
         params[3] = OSSL_PARAM_construct_end();
 
         ok = data_cb(params, data_cbarg);
