@@ -355,7 +355,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg,
             ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
             goto err;
         }
-        memcpy(key->pubkey, p, plen);
+        memcpy(key->pubkey, p, plen);//implement composite memcpy
     }
     else
     {

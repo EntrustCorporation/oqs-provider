@@ -19,6 +19,7 @@
 #  include <openssl/core.h>
 #  include <openssl/e_os2.h>
 
+
 #define OQS_PROVIDER_VERSION_STR "0.4.0-dev"
 
 /* internal, but useful OSSL define */
@@ -85,6 +86,7 @@ void oqsx_freeprovctx(PROV_OQS_CTX *ctx);
 # define PROV_OQS_LIBCTX_OF(provctx) (((PROV_OQS_CTX *)provctx)->libctx)
 
 #include "oqs/oqs.h"
+
 
 /* helper structure for classic key components in hybrid keys.
  * Actual tables in oqsprov_keys.ce
