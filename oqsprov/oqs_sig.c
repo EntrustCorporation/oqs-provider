@@ -429,9 +429,9 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
       }
       else
       { // rsa3072
-        classical_md = EVP_sha512();
-        digest_len = SHA512_DIGEST_LENGTH;
-        SHA512(tbs, tbslen, (unsigned char *)&digest);
+        classical_md = EVP_sha256();
+        digest_len = SHA256_DIGEST_LENGTH;
+        SHA256(tbs, tbslen, (unsigned char *)&digest);
       }
 
       if ((EVP_PKEY_CTX_set_signature_md(classical_ctx_sign, classical_md) <= 0) ||
@@ -507,9 +507,9 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
       }
       else
       { // rsa3072
-        classical_md = EVP_sha512();
-        digest_len = SHA512_DIGEST_LENGTH;
-        SHA512(tbs, tbslen, (unsigned char *)&digest);
+        classical_md = EVP_sha256();
+        digest_len = SHA256_DIGEST_LENGTH;
+        SHA256(tbs, tbslen, (unsigned char *)&digest);
       }
 
       if ((EVP_PKEY_CTX_set_signature_md(classical_ctx_sign, classical_md) <= 0) ||
@@ -728,9 +728,9 @@ static int oqs_sig_verify(void *vpoqs_sigctx, const unsigned char *sig, size_t s
       }
       else
       { // rsa3072
-        classical_md = EVP_sha512();
-        digest_len = SHA512_DIGEST_LENGTH;
-        SHA512(tbs, tbslen, (unsigned char *)&digest);
+        classical_md = EVP_sha256();
+        digest_len = SHA256_DIGEST_LENGTH;
+        SHA256(tbs, tbslen, (unsigned char *)&digest);
       }
       if ((EVP_PKEY_CTX_set_signature_md(ctx_verify, classical_md) <= 0) ||
           (EVP_PKEY_verify(ctx_verify, compsig->sig1->data, compsig->sig1->length, digest, digest_len) <= 0))
@@ -790,9 +790,9 @@ static int oqs_sig_verify(void *vpoqs_sigctx, const unsigned char *sig, size_t s
       }
       else
       { // rsa3072
-        classical_md = EVP_sha512();
-        digest_len = SHA512_DIGEST_LENGTH;
-        SHA512(tbs, tbslen, (unsigned char *)&digest);
+        classical_md = EVP_sha256();
+        digest_len = SHA256_DIGEST_LENGTH;
+        SHA256(tbs, tbslen, (unsigned char *)&digest);
       }
       if ((EVP_PKEY_CTX_set_signature_md(ctx_verify, classical_md) <= 0) ||
           (EVP_PKEY_verify(ctx_verify, compsig->sig2->data, compsig->sig2->length, digest, digest_len) <= 0))
