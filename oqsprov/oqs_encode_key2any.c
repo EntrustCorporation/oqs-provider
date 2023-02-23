@@ -30,6 +30,9 @@
 #include "oqs_endecoder_local.h"
 #include "oqs_prov.h"
 
+#include <openssl/asn1t.h>
+#include <openssl/types.h>
+
 #ifdef NDEBUG
 #define OQS_ENC_PRINTF(a)
 #define OQS_ENC_PRINTF2(a, b)
@@ -54,6 +57,7 @@ struct key2any_ctx_st {
     OSSL_PASSPHRASE_CALLBACK *pwcb;
     void *pwcbarg;
 };
+
 
 typedef int check_key_type_fn(const void *key, int nid);
 typedef int key_to_paramstring_fn(const void *key, int nid, int save,
@@ -308,7 +312,7 @@ static int key_to_pki_pem_priv_bio(BIO *out, const void *key,
     void *str = NULL, *strc = NULL;
     int strtype = V_ASN1_UNDEF;
     int strtypec = V_ASN1_UNDEF;
-    PKCS8_PRIV_KEY_INFO *p8info, *p8infoc;
+    PKCS8_PRIV_KEY_INFO *p8info;
 
     OQS_ENC_PRINTF("OQS ENC provider: key_to_pki_pem_priv_bio called\n");
 
@@ -351,7 +355,9 @@ static int key_to_spki_der_pub_bio(BIO *out, const void *key,
                             &str, &strtype))
         return 0;
 
+
     xpk = oqsx_key_to_pubkey(key, key_nid, str, strtype, k2d);
+
 
     if (xpk != NULL)
         ret = i2d_X509_PUBKEY_bio(out, xpk);
@@ -496,9 +502,6 @@ static int prepare_oqsx_params(const void *oqsxkey, int nid, int save,
         ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_KEY);
         return 0;
     }
-
-    if (k->keytype == KEY_TYPE_CMP_SIG)
-      printf("AAAAAAAAAAAA\n" ); //oqsx_provider_ctx_cmp
 
     if (nid != NID_undef) {
         params = OBJ_nid2obj(nid);
@@ -1033,7 +1036,6 @@ static int key2any_encode(struct key2any_ctx_st *ctx, OSSL_CORE_BIO *cout,
 
 
       printf("B %p, %d, %s\n", key, type, pemname);
-      printf("%d\n", oqsk->keytype != KEY_TYPE_CMP_SIG);
 
 
       ret = writer(out, key, type, pemname, key2paramstring, key2der, ctx);
