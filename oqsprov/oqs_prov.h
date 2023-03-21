@@ -134,7 +134,6 @@ struct oqsx_key_st {
     char *propq;
     OQSX_KEY_TYPE keytype;
     OQSX_PROVIDER_CTX *oqsx_provider_ctx;
-//    OQSX_PROVIDER_CTX oqsx_provider_ctx_cmp;
     EVP_PKEY **cmp_classical_pkey;
     EVP_PKEY *classical_pkey; // for hybrid sigs
     const OQSX_EVP_INFO *evp_info;
@@ -178,7 +177,7 @@ char* get_oqsname(int nid);
 int get_cmpname(int nid, int index, char *out);
 int get_qntcmp(int nid);
 int get_keytype(int nid);
-char* get_tlsname_fromoqs(char* oqsname);
+char* get_oqsname_fromtls(char* oqsname);
 
 /* Register given NID with tlsname in OSSL3 registry */
 int oqs_set_nid(char* tlsname, int nid);

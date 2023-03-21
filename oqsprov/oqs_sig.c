@@ -77,7 +77,6 @@ static int get_aid(unsigned char **oidbuf, const char *tls_name)
 {
   X509_ALGOR *algor = X509_ALGOR_new();
   int aidlen = 0;
-  printf("tls: %s\n", tls_name);
 
   X509_ALGOR_set0(algor, OBJ_txt2obj(tls_name, 0), V_ASN1_UNDEF, NULL);
 
@@ -254,20 +253,6 @@ static int oqs_sig_sign(void *vpoqs_sigctx, unsigned char *sig, size_t *siglen,
   if (is_composite)
   {
     max_sig_len = oqsx_key_maxsize(oqsxkey);
-/*     
-max_sig_len += sizeof(CompositeSignature);
-
-    if (is_composite_second_classic)
-    {
-      max_sig_len += oqsxkey->oqsx_provider_ctx_cmp.oqsx_evp_ctx->evp_info->length_signature;
-      cmp_sig_len = oqsxkey->oqsx_provider_ctx_cmp.oqsx_evp_ctx->evp_info->length_signature;
-    }
-    else
-    {
-      max_sig_len += cmp_key->length_signature;
-      cmp_sig_len = cmp_key->length_signature;
-    }
-*/
   }else
   {
     max_sig_len += oqs_key->length_signature;
@@ -376,7 +361,7 @@ max_sig_len += sizeof(CompositeSignature);
     for (i = 0; i < oqsxkey->numkeys; i++){
       get_cmpname(OBJ_sn2nid(oqsxkey->tls_name), i, name);
 
-      if (get_tlsname_fromoqs(name)){
+      if (get_oqsname_fromtls(name)){
         oqs_sig_len = oqsxkey->oqsx_provider_ctx[i].oqsx_qs_ctx.sig->length_signature;
         buf = OPENSSL_malloc(oqs_sig_len);
         if (OQS_SIG_sign(oqs_key, buf, &oqs_sig_len, tbs, tbslen, oqsxkey->comp_privkey[i]) != OQS_SUCCESS)
@@ -471,44 +456,11 @@ max_sig_len += sizeof(CompositeSignature);
   *siglen = classical_sig_len + oqs_sig_len;
   OQS_SIG_PRINTF2("OQS SIG provider: signing completes with size %ld\n", *siglen);
   rv = 1; /* success */
-
-  /*
-      printf("%d, %ld, %ld\n", SIZE_OF_UINT32, actual_classical_sig_len, index);
-
-      printf("%ld, %ld, %ld\n", classical_sig_len, oqs_sig_len, *siglen);
-
-      printf("classical sig:");
-
-      for (int k = SIZE_OF_UINT32; k<index; k++)
-        {
-        printf("%c", sig[k]);
-        }
-
-        printf("\n\n\n\n\n\nOQS sig:");
-
-      for (int k =index; k<oqs_sig_len; k++)
-        {
-        printf("%c", sig[k]);
-        }
-
-      printf("\n\n\n\n\n\nFULL sig:");
-
-      for (int k =0; k<*siglen; k++)
-        {
-        if (k == SIZE_OF_UINT32) printf("\n-----------------------------\n");
-        if (k == index) printf("\n-----------------------------\n");
-        printf("%c", sig[k]);
-        }
-
-        printf("\n");
-
-  */
 endsign:
   if (classical_ctx_sign)
   {
     EVP_PKEY_CTX_free(classical_ctx_sign);
   }
-  printf("rv %i\n", rv);
   return rv;
 }
 
@@ -621,7 +573,7 @@ static int oqs_sig_verify(void *vpoqs_sigctx, const unsigned char *sig, size_t s
         buf_len = compsig->sig2->length;
       }
 
-      if (get_tlsname_fromoqs(name)){
+      if (get_oqsname_fromtls(name)){
         if (OQS_SIG_verify(oqs_key, tbs, tbslen, buf, buf_len, oqsxkey->comp_pubkey[i]) != OQS_SUCCESS)
         {
           ERR_raise(ERR_LIB_USER, OQSPROV_R_VERIFY_ERROR);
