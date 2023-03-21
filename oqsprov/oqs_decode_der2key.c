@@ -371,15 +371,9 @@ static int oqs_der2key_decode(void *vctx, OSSL_CORE_BIO *cin, int selection,
                                              (char *)ctx->desc->keytype_name,
                                              0);
         /* The address of the key becomes the octet string */
-        if (get_keytype(OBJ_sn2nid(ctx->desc->keytype_name)) != KEY_TYPE_CMP_SIG){
-            params[2] =
-                OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
-                                                &key, sizeof(key));
-        }else{
-            params[2] =
-                OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
-                                                &key, sizeof(key));
-        }
+        params[2] =
+            OSSL_PARAM_construct_octet_string(OSSL_OBJECT_PARAM_REFERENCE,
+                                            &key, sizeof(key));
         params[3] = OSSL_PARAM_construct_end();
 
         ok = data_cb(params, data_cbarg);
@@ -629,22 +623,6 @@ MAKE_DECODER("falcon1024", falcon1024, oqsx, PrivateKeyInfo);
 MAKE_DECODER("falcon1024", falcon1024, oqsx, SubjectPublicKeyInfo);
 MAKE_DECODER("p521_falcon1024", p521_falcon1024, oqsx, PrivateKeyInfo);
 MAKE_DECODER("p521_falcon1024", p521_falcon1024, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("picnicl1full", picnicl1full, oqsx, PrivateKeyInfo);
-MAKE_DECODER("picnicl1full", picnicl1full, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("p256_picnicl1full", p256_picnicl1full, oqsx, PrivateKeyInfo);
-MAKE_DECODER("p256_picnicl1full", p256_picnicl1full, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("rsa3072_picnicl1full", rsa3072_picnicl1full, oqsx, PrivateKeyInfo);
-MAKE_DECODER("rsa3072_picnicl1full", rsa3072_picnicl1full, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("picnic3l1", picnic3l1, oqsx, PrivateKeyInfo);
-MAKE_DECODER("picnic3l1", picnic3l1, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("p256_picnic3l1", p256_picnic3l1, oqsx, PrivateKeyInfo);
-MAKE_DECODER("p256_picnic3l1", p256_picnic3l1, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("rsa3072_picnic3l1", rsa3072_picnic3l1, oqsx, PrivateKeyInfo);
-MAKE_DECODER("rsa3072_picnic3l1", rsa3072_picnic3l1, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("rainbowVclassic", rainbowVclassic, oqsx, PrivateKeyInfo);
-MAKE_DECODER("rainbowVclassic", rainbowVclassic, oqsx, SubjectPublicKeyInfo);
-MAKE_DECODER("p521_rainbowVclassic", p521_rainbowVclassic, oqsx, PrivateKeyInfo);
-MAKE_DECODER("p521_rainbowVclassic", p521_rainbowVclassic, oqsx, SubjectPublicKeyInfo);
 MAKE_DECODER("sphincsharaka128frobust", sphincsharaka128frobust, oqsx, PrivateKeyInfo);
 MAKE_DECODER("sphincsharaka128frobust", sphincsharaka128frobust, oqsx, SubjectPublicKeyInfo);
 MAKE_DECODER("p256_sphincsharaka128frobust", p256_sphincsharaka128frobust, oqsx, PrivateKeyInfo);

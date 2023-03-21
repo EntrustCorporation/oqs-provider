@@ -42,7 +42,7 @@ extern OSSL_FUNC_provider_get_capabilities_fn oqs_provider_get_capabilities;
  * List of all algorithms with given OIDs
  */
 ///// OQS_TEMPLATE_FRAGMENT_ASSIGN_SIG_OIDS_START
-#define OQS_OID_CNT 82
+#define OQS_OID_CNT 66
 static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 {
 "1.3.6.1.4.1.2.267.7.4.4", "dilithium2",
@@ -64,14 +64,6 @@ static const char* oqs_oid_alg_list[OQS_OID_CNT] =
 "1.3.9999.3.3" , "rsa3072_falcon512",
 "1.3.9999.3.4", "falcon1024",
 "1.3.9999.3.5" , "p521_falcon1024",
-"1.3.6.1.4.1.311.89.2.1.7", "picnicl1full",
-"1.3.6.1.4.1.311.89.2.1.8" , "p256_picnicl1full",
-"1.3.6.1.4.1.311.89.2.1.9" , "rsa3072_picnicl1full",
-"1.3.6.1.4.1.311.89.2.1.21", "picnic3l1",
-"1.3.6.1.4.1.311.89.2.1.22" , "p256_picnic3l1",
-"1.3.6.1.4.1.311.89.2.1.23" , "rsa3072_picnic3l1",
-"1.3.9999.5.3.1.1", "rainbowVclassic",
-"1.3.9999.5.3.2.1" , "p521_rainbowVclassic",
 "1.3.9999.6.1.1", "sphincsharaka128frobust",
 "1.3.9999.6.1.2" , "p256_sphincsharaka128frobust",
 "1.3.9999.6.1.3" , "rsa3072_sphincsharaka128frobust",
@@ -219,9 +211,6 @@ static const OSSL_ALGORITHM oqsprovider_keymgmt[] = {
     ALG("dilithium5_aes", oqs_dilithium5_aes_keymgmt_functions),ALG("p521_dilithium5_aes", oqs_p521_dilithium5_aes_keymgmt_functions),
     ALG("falcon512", oqs_falcon512_keymgmt_functions),ALG("p256_falcon512", oqs_p256_falcon512_keymgmt_functions),ALG("rsa3072_falcon512", oqs_rsa3072_falcon512_keymgmt_functions),
     ALG("falcon1024", oqs_falcon1024_keymgmt_functions),ALG("p521_falcon1024", oqs_p521_falcon1024_keymgmt_functions),
-    ALG("picnicl1full", oqs_picnicl1full_keymgmt_functions),ALG("p256_picnicl1full", oqs_p256_picnicl1full_keymgmt_functions),ALG("rsa3072_picnicl1full", oqs_rsa3072_picnicl1full_keymgmt_functions),
-    ALG("picnic3l1", oqs_picnic3l1_keymgmt_functions),ALG("p256_picnic3l1", oqs_p256_picnic3l1_keymgmt_functions),ALG("rsa3072_picnic3l1", oqs_rsa3072_picnic3l1_keymgmt_functions),
-    ALG("rainbowVclassic", oqs_rainbowVclassic_keymgmt_functions),ALG("p521_rainbowVclassic", oqs_p521_rainbowVclassic_keymgmt_functions),
     ALG("sphincsharaka128frobust", oqs_sphincsharaka128frobust_keymgmt_functions),ALG("p256_sphincsharaka128frobust", oqs_p256_sphincsharaka128frobust_keymgmt_functions),ALG("rsa3072_sphincsharaka128frobust", oqs_rsa3072_sphincsharaka128frobust_keymgmt_functions),
     ALG("sphincssha256128frobust", oqs_sphincssha256128frobust_keymgmt_functions),ALG("p256_sphincssha256128frobust", oqs_p256_sphincssha256128frobust_keymgmt_functions),ALG("rsa3072_sphincssha256128frobust", oqs_rsa3072_sphincssha256128frobust_keymgmt_functions),
     ALG("sphincsshake256128frobust", oqs_sphincsshake256128frobust_keymgmt_functions),ALG("p256_sphincsshake256128frobust", oqs_p256_sphincsshake256128frobust_keymgmt_functions),ALG("rsa3072_sphincsshake256128frobust", oqs_rsa3072_sphincsshake256128frobust_keymgmt_functions),
@@ -241,15 +230,6 @@ static const OSSL_ALGORITHM oqsprovider_keymgmt[] = {
     KEMKMALG3(kyber512, 128),
     KEMKMALG3(kyber768, 192),
     KEMKMALG2(kyber1024, 256),
-    KEMKMALG3(ntru_hps2048509, 128),
-    KEMKMALG3(ntru_hps2048677, 192),
-    KEMKMALG2(ntru_hps4096821, 256),
-    KEMKMALG2(ntru_hps40961229, 256),
-    KEMKMALG3(ntru_hrss701, 192),
-    KEMKMALG2(ntru_hrss1373, 256),
-    KEMKMALG3(lightsaber, 128),
-    KEMKMALG3(saber, 192),
-    KEMKMALG2(firesaber, 256),
     KEMKMALG3(bikel1, 128),
     KEMKMALG3(bikel3, 192),
     KEMKMALG3(kyber90s512, 128),
@@ -258,14 +238,6 @@ static const OSSL_ALGORITHM oqsprovider_keymgmt[] = {
     KEMKMALG3(hqc128, 128),
     KEMKMALG3(hqc192, 192),
     KEMKMALG2(hqc256, 256),
-    KEMKMALG3(ntrulpr653, 128),
-    KEMKMALG3(ntrulpr761, 128),
-    KEMKMALG3(ntrulpr857, 192),
-    KEMKMALG2(ntrulpr1277, 256),
-    KEMKMALG3(sntrup653, 128),
-    KEMKMALG3(sntrup761, 128),
-    KEMKMALG3(sntrup857, 192),
-    KEMKMALG2(sntrup1277, 256),
 ///// OQS_TEMPLATE_FRAGMENT_KEYMGMT_FUNCTIONS_END
     //ALG("x25519_sikep434", oqs_ecx_sikep434_keymgmt_functions),
     { NULL, NULL, NULL }

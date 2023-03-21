@@ -558,7 +558,6 @@ static int oqsx_spki_pub_to_der(const void *vecxkey, unsigned char **pder)
     return oqsxkey->pubkeylen;
     }else{
         int len, i;
-        size_t previouslen = 0;
         char *name = OPENSSL_malloc(strlen(oqsxkey->tls_name));
         if((sk = sk_ASN1_TYPE_new_null()) == NULL)
             return -1;
@@ -571,7 +570,7 @@ static int oqsx_spki_pub_to_der(const void *vecxkey, unsigned char **pder)
             get_cmpname(OBJ_sn2nid(oqsxkey->tls_name), i, name);
 
             len = oqsxkey->pubkeylen_cmp[i];
-            buf = OPENSSL_memdup(oqsxkey->pubkey +  previouslen, len);
+            buf = OPENSSL_memdup(oqsxkey->comp_pubkey[i], len);
 
             if(get_tlsname_fromoqs(name) == 0)
                 nid = oqsxkey->oqsx_provider_ctx[i].oqsx_evp_ctx->evp_info->nid;
@@ -591,7 +590,6 @@ static int oqsx_spki_pub_to_der(const void *vecxkey, unsigned char **pder)
             if (!sk_ASN1_TYPE_push(sk, aType))
                 return -1;
 
-            previouslen += len;
         }
 
 /* 
@@ -699,7 +697,6 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
         }
     }else{
         int i;
-        size_t previouslen = 0;
         name = OPENSSL_malloc(strlen(oqsxkey->tls_name));;
         if((sk = sk_ASN1_TYPE_new_null()) == NULL)
             return -1;
@@ -711,8 +708,10 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
             temp = NULL;
             get_cmpname(OBJ_sn2nid(oqsxkey->tls_name), i, name);
 
-            buflen = oqsxkey->privkeylen_cmp[i];
-            buf = OPENSSL_memdup(oqsxkey->privkey +  previouslen, buflen);
+            buflen = oqsxkey->privkeylen_cmp[i] + oqsxkey->pubkeylen_cmp[i];
+            buf = OPENSSL_malloc(buflen);
+            memcpy(buf, oqsxkey->comp_privkey[i], oqsxkey->privkeylen_cmp[i]);
+            memcpy(buf + oqsxkey->privkeylen_cmp[i], oqsxkey->comp_pubkey[i], oqsxkey->pubkeylen_cmp[i]);
 
             if(get_tlsname_fromoqs(name) == 0)
                 nid = oqsxkey->oqsx_provider_ctx[i].oqsx_evp_ctx->evp_info->nid;
@@ -732,7 +731,6 @@ static int oqsx_pki_priv_to_der(const void *vecxkey, unsigned char **pder)
             if (!sk_ASN1_TYPE_push(sk, aType))
                 return -1;
 
-            previouslen += buflen;
         }
         keybloblen = i2d_ASN1_SEQUENCE_ANY(sk, pder);
         OPENSSL_free(name);
@@ -1390,54 +1388,6 @@ MAKE_ENCODER(p521_falcon1024, oqsx, PrivateKeyInfo, der);
 MAKE_ENCODER(p521_falcon1024, oqsx, PrivateKeyInfo, pem);
 MAKE_ENCODER(p521_falcon1024, oqsx, SubjectPublicKeyInfo, der);
 MAKE_ENCODER(p521_falcon1024, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(picnicl1full, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(picnicl1full, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(picnicl1full, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(picnicl1full, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(picnicl1full, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(picnicl1full, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(p256_picnicl1full, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(p256_picnicl1full, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(p256_picnicl1full, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(p256_picnicl1full, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(p256_picnicl1full, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(p256_picnicl1full, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnicl1full, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(picnic3l1, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(picnic3l1, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(picnic3l1, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(picnic3l1, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(picnic3l1, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(picnic3l1, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(p256_picnic3l1, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(p256_picnic3l1, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(p256_picnic3l1, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(p256_picnic3l1, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(p256_picnic3l1, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(p256_picnic3l1, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(rsa3072_picnic3l1, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(rainbowVclassic, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(rainbowVclassic, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(rainbowVclassic, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(rainbowVclassic, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(rainbowVclassic, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(rainbowVclassic, oqsx, SubjectPublicKeyInfo, pem);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, EncryptedPrivateKeyInfo, der);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, EncryptedPrivateKeyInfo, pem);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, PrivateKeyInfo, der);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, PrivateKeyInfo, pem);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, SubjectPublicKeyInfo, der);
-MAKE_ENCODER(p521_rainbowVclassic, oqsx, SubjectPublicKeyInfo, pem);
 MAKE_ENCODER(sphincsharaka128frobust, oqsx, EncryptedPrivateKeyInfo, der);
 MAKE_ENCODER(sphincsharaka128frobust, oqsx, EncryptedPrivateKeyInfo, pem);
 MAKE_ENCODER(sphincsharaka128frobust, oqsx, PrivateKeyInfo, der);
