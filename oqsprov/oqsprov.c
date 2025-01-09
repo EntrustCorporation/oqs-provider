@@ -996,38 +996,6 @@ static const OSSL_ALGORITHM oqsprovider_decoder[] = {
 #undef DECODER_PROVIDER
 };
 
-// get the last number on the composite OID
-int get_composite_idx(char *name) {
-    char *s = NULL;
-    int i, len, ret = -1, count = 0;
-
-    for (i = 1; i <= OQS_OID_CNT; i += 2) {
-        if (!strcmp((char *)oqs_oid_alg_list[i], name)) {
-            s = (char *)oqs_oid_alg_list[i - 1];
-            break;
-        }
-    }
-    if (s == NULL) {
-        return ret;
-    }
-
-    len = strlen(s);
-
-    for (i = 0; i < len; i++) {
-        if (s[i] == '.') {
-            count += 1;
-        }
-        if (count == 8) { // 8 dots in composite OID
-            errno = 0;
-            ret = strtol(s + i + 1, NULL, 10);
-            if (errno == ERANGE)
-                ret = -1;
-            break;
-        }
-    }
-    return ret;
-}
-
 static const OSSL_PARAM *oqsprovider_gettable_params(void *provctx) {
     return oqsprovider_param_types;
 }
@@ -1261,3 +1229,7 @@ end_init:
     }
     return rc;
 }
+
+int get_OQS_OID_CNT() { return OQS_OID_CNT; }
+
+const char *get_oqs_oid_alg_list(int index) { return oqs_oid_alg_list[index]; }

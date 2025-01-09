@@ -99,6 +99,8 @@ void oqsx_freeprovctx(PROV_OQS_CTX *ctx);
 
 #include "oqs/oqs.h"
 
+typedef enum { KEY_OP_PUBLIC, KEY_OP_PRIVATE, KEY_OP_KEYGEN } oqsx_key_op_t;
+
 /* helper structure for classic key components in hybrid keys.
  * Actual tables in oqsprov_keys.c
  */
@@ -204,6 +206,40 @@ char *get_oqsname(int nid);
 char *get_cmpname(int nid, int index);
 int get_oqsalg_idx(int nid);
 int get_composite_idx(char *name);
+OQSX_EVP_INFO get_nids_sig(int index);
+const int get_nids_sig_OSSL_NELEM();
+EVP_PKEY *oqsx_key_gen_evp_key_sig(OQSX_EVP_CTX *ctx, unsigned char *pubkey,
+                                   unsigned char *privkey, int encode);
+int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char *algname);
+int get_OQS_OID_CNT();
+const char *get_oqs_oid_alg_list(int index);
+
+/* Composite sigs functions */
+
+int oqs_composite_sig_sign(OQSX_KEY *oqsxkey, unsigned char *sig,
+                           const unsigned char *tbs, size_t tbslen);
+int oqs_composite_sig_verify(OQSX_KEY *oqsxkey, const unsigned char *sig,
+                             size_t siglen, const unsigned char *tbs,
+                             size_t tbslen);
+int oqsx_composite_spki_pub_to_der(const OQSX_KEY *oqsxkey,
+                                   unsigned char **pder);
+int oqsx_composite_pki_priv_to_der(const OQSX_KEY *oqsxkey,
+                                   unsigned char **pder);
+int oqsx_composite_to_text(BIO *out, OQSX_KEY *okey);
+OQSX_KEY *oqsx_composite_key_op(OQSX_KEY *key, const unsigned char *p,
+                                int plen);
+int oqsx_composite_key_recreate_classickey(OQSX_KEY *key, oqsx_key_op_t op);
+int oqsx_composite_key_set_composites(OQSX_KEY *key);
+int oqsx_composite_key_gen(OQSX_KEY *key);
+OQSX_KEY *oqsx_composite_key_new(OQSX_KEY *ret, char *tls_name, int primitive,
+                                 int bit_security);
+const unsigned char *oqsx_composite_key_from_pkcs8(const unsigned char *p,
+                                                   const X509_ALGOR *palg,
+                                                   int *plen, int *comp_diff);
+const unsigned char *oqsx_composite_key_from_x509pubkey(const unsigned char *p,
+                                                        int *plen);
+int oqsx_composite_key_maxsize(OQSX_KEY *key);
+void oqsx_composite_key_free(OQSX_KEY *key);
 
 /* Workaround for not functioning EC PARAM initialization
  * TBD, check https://github.com/openssl/openssl/issues/16989

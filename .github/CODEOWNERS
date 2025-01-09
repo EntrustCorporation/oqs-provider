@@ -6,5 +6,6 @@
 /CMakeLists.txt @baentsch @zadlg
 /.circleci/config.yml @baentsch @zadlg
 /.github/workflows @baentsch @zadlg @jplomas
-/oqsprov/oqs_sig.c @baentsch @feventura
+/oqsprov/oqs_sig.c @baentsch 
 /scripts/oqsprovider-pkcs12gen.sh @iyanmv
+/oqsprov/oqs_comp_sig.c @feventura

@@ -35,8 +35,6 @@
     printf(a, b, c)
 #endif // NDEBUG
 
-typedef enum { KEY_OP_PUBLIC, KEY_OP_PRIVATE, KEY_OP_KEYGEN } oqsx_key_op_t;
-
 /// NID/name table
 
 typedef struct {
@@ -409,26 +407,9 @@ static int oqsx_key_set_composites(OQSX_KEY *key, int classic_lengths_fixed) {
     if (key->numkeys == 1) {
         key->comp_privkey[0] = key->privkey;
         key->comp_pubkey[0] = key->pubkey;
-    } else { // TBD: extend for more than 1 classic key or first OQS for
-             // composite:
+    } else { // TBD: extend for more than 1 classic key
         if (key->keytype == KEY_TYPE_CMP_SIG) {
-            int i;
-            int privlen = 0;
-            int publen = 0;
-            for (i = 0; i < key->numkeys; i++) {
-                if (key->privkey) {
-                    key->comp_privkey[i] = (char *)key->privkey + privlen;
-                    privlen += key->privkeylen_cmp[i];
-                } else {
-                    key->comp_privkey[i] = NULL;
-                }
-                if (key->pubkey) {
-                    key->comp_pubkey[i] = (char *)key->pubkey + publen;
-                    publen += key->pubkeylen_cmp[i];
-                } else {
-                    key->comp_pubkey[i] = NULL;
-                }
-            }
+            return oqsx_composite_key_set_composites(key);
         } else {
 
             /* Sets composites for comp_privkey and comp_pubkey structures, if
@@ -567,8 +548,11 @@ static const OQSX_EVP_INFO nids_ecx[] = {
     {0, 0, 0, 0, 0, 0, 0}                   // 256 bit
 };
 
-static int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx,
-                            char *algname) {
+OQSX_EVP_INFO get_nids_sig(int index) { return nids_sig[index]; }
+
+const int get_nids_sig_OSSL_NELEM() { return OSSL_NELEM(nids_sig); }
+
+int oqsx_hybsig_init(int bit_security, OQSX_EVP_CTX *evp_ctx, char *algname) {
     int ret = 1;
     int idx = (bit_security - 128) / 64;
     ON_ERR_GOTO(idx < 0 || idx > 5, err_init);
@@ -739,127 +723,7 @@ static OQSX_KEY *oqsx_key_op(const X509_ALGOR *palg, const unsigned char *p,
         // pub key classic pub key must/can be re-created from classic
         // private key
         if (key->keytype == KEY_TYPE_CMP_SIG) {
-            uint32_t privlen = 0;
-            size_t publen = 0;
-            size_t previous_privlen = 0;
-            size_t previous_publen = 0;
-            size_t temp_pub_len, temp_priv_len;
-            char *temp_priv, *temp_pub;
-            int pqc_pub_enc = 0;
-            int i;
-
-            // check if key is the right size
-            for (i = 0; i < key->numkeys; i++) {
-                char *name;
-                if ((name = get_cmpname(OBJ_sn2nid(key->tls_name), i)) ==
-                    NULL) {
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    goto err_key_op;
-                }
-                privlen = key->privkeylen_cmp[i];
-                if (get_oqsname_fromtls(name) == 0) { // classical key
-                    publen = 0;
-                } else {                            // PQC key
-                    publen = key->pubkeylen_cmp[i]; // pubkey in
-                                                    // PQC privkey
-                                                    // is OPTIONAL
-                }
-                previous_privlen += privlen;
-                previous_publen += publen;
-                OPENSSL_free(name);
-            }
-            if (previous_privlen != plen) {
-                // is ok, PQC pubkey might be in privkey
-                pqc_pub_enc = 1;
-                if (previous_privlen + previous_publen != plen) {
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    goto err_key_op;
-                }
-                if (oqsx_key_allocate_keymaterial(key, 0)) {
-                    ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
-                    goto err_key_op;
-                }
-            }
-            if (oqsx_key_allocate_keymaterial(key, 1)) {
-                ERR_raise(ERR_LIB_USER, ERR_R_MALLOC_FAILURE);
-                goto err_key_op;
-            }
-            temp_priv_len = previous_privlen;
-            temp_pub_len = previous_publen;
-            temp_priv = OPENSSL_secure_zalloc(temp_priv_len);
-            temp_pub = OPENSSL_secure_zalloc(temp_pub_len);
-            previous_privlen = 0;
-            previous_publen = 0;
-            for (i = 0; i < key->numkeys; i++) {
-                size_t classic_publen = 0;
-                char *name;
-                if ((name = get_cmpname(OBJ_sn2nid(key->tls_name), i)) ==
-                    NULL) {
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    OPENSSL_secure_clear_free(temp_priv, temp_priv_len);
-                    OPENSSL_secure_clear_free(temp_pub, temp_pub_len);
-                    goto err_key_op;
-                }
-                if (get_oqsname_fromtls(name) == 0) { // classical key
-                    publen = 0; // no pubkey encoded with privkey
-                                // on classical keys. will
-                                // recreate the pubkey later
-                    if (key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                            ->keytype ==
-                        EVP_PKEY_RSA) { // get the RSA real key size
-                        if (previous_privlen + previous_publen + 4 > plen) {
-                            OPENSSL_free(name);
-                            OPENSSL_secure_clear_free(temp_priv, temp_priv_len);
-                            OPENSSL_secure_clear_free(temp_pub, temp_pub_len);
-                            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                            goto err_key_op;
-                        }
-                        unsigned char *enc_len =
-                            (unsigned char *)OPENSSL_strndup(
-                                (const char *)(p + previous_privlen +
-                                               previous_publen),
-                                4);
-                        OPENSSL_cleanse(enc_len, 2);
-                        DECODE_UINT32(privlen, enc_len);
-                        privlen += 4;
-                        OPENSSL_free(enc_len);
-                        if (privlen > key->privkeylen_cmp[i]) {
-                            OPENSSL_free(name);
-                            OPENSSL_secure_clear_free(temp_priv, temp_priv_len);
-                            OPENSSL_secure_clear_free(temp_pub, temp_pub_len);
-                            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                            goto err_key_op;
-                        }
-                        key->privkeylen_cmp[i] = privlen;
-                    } else
-                        privlen = key->privkeylen_cmp[i];
-                } else { // PQC key
-                    privlen = key->privkeylen_cmp[i];
-                    if (pqc_pub_enc)
-                        publen = key->pubkeylen_cmp[i];
-                    else
-                        publen = 0;
-                }
-                if (previous_privlen + previous_publen + privlen > plen) {
-                    OPENSSL_free(name);
-                    OPENSSL_secure_clear_free(temp_priv, temp_priv_len);
-                    OPENSSL_secure_clear_free(temp_pub, temp_pub_len);
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    goto err_key_op;
-                }
-                memcpy(temp_priv + previous_privlen,
-                       p + previous_privlen + previous_publen, privlen);
-                memcpy(temp_pub + previous_publen,
-                       p + privlen + previous_privlen + previous_publen,
-                       publen);
-                previous_privlen += privlen;
-                previous_publen += publen;
-                OPENSSL_free(name);
-            }
-            memcpy(key->privkey, temp_priv, previous_privlen);
-            memcpy(key->pubkey, temp_pub, previous_publen);
-            OPENSSL_secure_clear_free(temp_priv, temp_priv_len);
-            OPENSSL_secure_clear_free(temp_pub, temp_pub_len);
+            key = oqsx_composite_key_op(key, p, plen);
         } else {
             if (key->numkeys == 2) {
                 size_t expected_pq_privkey_len =
@@ -960,99 +824,8 @@ err_key_op:
 /* Recreate EVP data structure after import. RetVal 0 is error. */
 static int oqsx_key_recreate_classickey(OQSX_KEY *key, oqsx_key_op_t op) {
     if (key->keytype == KEY_TYPE_CMP_SIG) {
-        int i;
-        if (op == KEY_OP_PUBLIC) {
-            for (i = 0; i < key->numkeys; i++) {
-                char *name;
-                if ((name = get_cmpname(OBJ_sn2nid(key->tls_name), i)) ==
-                    NULL) {
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    goto rec_err;
-                }
-                const unsigned char *enc_pubkey = key->comp_pubkey[i];
-
-                if (get_oqsname_fromtls(name) == 0) {
-                    if (!key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                             ->raw_key_support) {
-                        EVP_PKEY *npk = EVP_PKEY_new();
-                        if (key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                                ->keytype != EVP_PKEY_RSA) {
-                            npk = setECParams(npk,
-                                              key->oqsx_provider_ctx
-                                                  .oqsx_evp_ctx->evp_info->nid);
-                        }
-                        key->classical_pkey = d2i_PublicKey(
-                            key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                                ->keytype,
-                            &npk, &enc_pubkey, key->pubkeylen_cmp[i]);
-                    } else
-                        key->classical_pkey = EVP_PKEY_new_raw_public_key(
-                            key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                                ->keytype,
-                            NULL, enc_pubkey, key->pubkeylen_cmp[i]);
-                    if (!key->classical_pkey) {
-                        ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                        OPENSSL_free(name);
-                        goto rec_err;
-                    }
-                }
-                OPENSSL_free(name);
-            }
-        }
-
-        if (op == KEY_OP_PRIVATE) {
-            for (i = 0; i < key->numkeys; i++) {
-                char *name;
-                if ((name = get_cmpname(OBJ_sn2nid(key->tls_name), i)) ==
-                    NULL) {
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    goto rec_err;
-                }
-                if (get_oqsname_fromtls(name) == 0) {
-                    const unsigned char *enc_privkey = key->comp_privkey[i];
-                    if (!key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                             ->raw_key_support) {
-                        EVP_PKEY *npk;
-                        key->classical_pkey = d2i_PrivateKey(
-                            key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                                ->keytype,
-                            NULL, &enc_privkey, key->privkeylen_cmp[i]);
-                    } else {
-                        key->classical_pkey = EVP_PKEY_new_raw_private_key(
-                            key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                                ->keytype,
-                            NULL, enc_privkey, key->privkeylen_cmp[i]);
-                    }
-                    if (!key->classical_pkey) {
-                        ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                        OPENSSL_free(name);
-                        goto rec_err;
-                    }
-                    if (!key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info
-                             ->raw_key_support) {
-                        unsigned char *comp_pubkey = key->comp_pubkey[i];
-                        int pubkeylen =
-                            i2d_PublicKey(key->classical_pkey, &comp_pubkey);
-                        if (pubkeylen != key->oqsx_provider_ctx.oqsx_evp_ctx
-                                             ->evp_info->length_public_key) {
-                            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                            OPENSSL_free(name);
-                            goto rec_err;
-                        }
-                    } else {
-                        size_t pubkeylen = key->pubkeylen_cmp[i];
-                        int ret = EVP_PKEY_get_raw_public_key(
-                            key->classical_pkey, key->comp_pubkey[i],
-                            &pubkeylen);
-                        if (ret <= 0) {
-                            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                            OPENSSL_free(name);
-                            goto rec_err;
-                        }
-                    }
-                }
-                OPENSSL_free(name);
-            }
+        if (!oqsx_composite_key_recreate_classickey(key, op)) {
+            goto rec_err;
         }
     } else {
         if (key->numkeys == 2) { // hybrid key
@@ -1161,51 +934,18 @@ OQSX_KEY *oqsx_key_from_x509pubkey(const X509_PUBKEY *xpk, OSSL_LIB_CTX *libctx,
     int plen;
     X509_ALGOR *palg;
     OQSX_KEY *oqsx = NULL;
-    STACK_OF(ASN1_TYPE) *sk = NULL;
-    ASN1_TYPE *aType = NULL;
-    ASN1_OCTET_STRING *oct = NULL;
-    const unsigned char *buf;
-    unsigned char *concat_key;
-    int count, aux, i, buflen;
 
     if (!xpk || (!X509_PUBKEY_get0_param(NULL, &p, &plen, &palg, xpk))) {
         return NULL;
     }
-    if (get_keytype(OBJ_obj2nid(palg->algorithm)) == KEY_TYPE_CMP_SIG) {
-        sk = d2i_ASN1_SEQUENCE_ANY(NULL, &p, plen);
-        if (sk == NULL) {
-            sk_ASN1_TYPE_pop_free(sk, &ASN1_TYPE_free);
-            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-            return NULL;
-        } else {
-            count = sk_ASN1_TYPE_num(sk);
-            concat_key =
-                OPENSSL_zalloc(plen); // concat_key is allocated with plen,
-                                      // which is the max value for pubkey
-
-            aux = 0;
-            for (i = 0; i < count; i++) {
-                aType =
-                    sk_ASN1_TYPE_pop(sk); // this remove in FILO order, but we
-                                          // need this in the opposite order
-                buf = aType->value.sequence->data;
-                buflen = aType->value.sequence->length;
-                aux += buflen;
-                memcpy(concat_key + plen - 1 - aux, buf,
-                       buflen); // fill concat_key starting at the end
-                ASN1_TYPE_free(aType);
-            }
-
-            p = OPENSSL_memdup(concat_key + plen - 1 - aux,
-                               aux); // copy used memory on concat_key to p
-            OPENSSL_clear_free(concat_key, plen);
-            plen = aux; // update plen value
-            sk_ASN1_TYPE_free(sk);
-        }
+    if ((get_keytype(OBJ_obj2nid(palg->algorithm)) == KEY_TYPE_CMP_SIG) &&
+        ((p = oqsx_composite_key_from_x509pubkey(p, &plen)) == NULL)) {
+        return NULL;
     }
     oqsx = oqsx_key_op(palg, p, plen, KEY_OP_PUBLIC, libctx, propq);
-    if (get_keytype(OBJ_obj2nid(palg->algorithm)) == KEY_TYPE_CMP_SIG)
+    if (get_keytype(OBJ_obj2nid(palg->algorithm)) == KEY_TYPE_CMP_SIG) {
         OPENSSL_clear_free((unsigned char *)p, plen);
+    }
     return oqsx;
 }
 
@@ -1213,14 +953,9 @@ OQSX_KEY *oqsx_key_from_pkcs8(const PKCS8_PRIV_KEY_INFO *p8inf,
                               OSSL_LIB_CTX *libctx, const char *propq) {
     OQSX_KEY *oqsx = NULL;
     const unsigned char *p;
-    int plen;
+    int plen, composite_aux = 0;
     ASN1_OCTET_STRING *oct = NULL;
     const X509_ALGOR *palg;
-    STACK_OF(ASN1_TYPE) *sk = NULL;
-    ASN1_TYPE *aType = NULL;
-    unsigned char *concat_key;
-    const unsigned char *buf;
-    int count, aux, i, buflen, key_diff = 0;
 
     if (!PKCS8_pkey_get0(NULL, &p, &plen, &palg, p8inf))
         return 0;
@@ -1235,186 +970,16 @@ OQSX_KEY *oqsx_key_from_pkcs8(const PKCS8_PRIV_KEY_INFO *p8inf,
             plen = ASN1_STRING_length(oct);
         }
     } else {
-        sk = d2i_ASN1_SEQUENCE_ANY(NULL, &p, plen);
-        if (sk == NULL) {
-            sk_ASN1_TYPE_pop_free(sk, &ASN1_TYPE_free);
-            ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-            return NULL;
-        } else {
-            count = sk_ASN1_TYPE_num(sk);
-            plen = 2 * plen; // get more than necessary in case its needed
-            concat_key = OPENSSL_zalloc(plen);
-            PKCS8_PRIV_KEY_INFO *p8inf_internal = NULL;
-            const X509_ALGOR *palg_internal;
-            int keytype, nid;
-
-            aux = 0;
-            for (i = 0; i < count; i++) {
-                aType =
-                    sk_ASN1_TYPE_pop(sk); // this remove in FILO order, but we
-                                          // need this in the opposite order
-                p8inf_internal = PKCS8_PRIV_KEY_INFO_new();
-                nid = 0;
-                char *name;
-                if ((name = get_cmpname(OBJ_obj2nid(palg->algorithm),
-                                        count - 1 - i)) == NULL) {
-                    ASN1_TYPE_free(aType);
-                    OPENSSL_clear_free(concat_key, plen);
-                    PKCS8_PRIV_KEY_INFO_free(p8inf_internal);
-                    sk_ASN1_TYPE_free(sk);
-                    ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                    return NULL;
-                }
-                buflen = aType->value.sequence->length;
-                const unsigned char *buf2 = aType->value.sequence->data;
-
-                p8inf_internal =
-                    d2i_PKCS8_PRIV_KEY_INFO(&p8inf_internal, &buf2, buflen);
-                if (!PKCS8_pkey_get0(NULL, &buf, &buflen, &palg_internal,
-                                     p8inf_internal)) {
-                    OPENSSL_free(name);
-                    ASN1_TYPE_free(aType);
-                    PKCS8_PRIV_KEY_INFO_free(p8inf_internal);
-                    OPENSSL_clear_free(concat_key, plen);
-                    sk_ASN1_TYPE_free(sk);
-                    return NULL;
-                }
-
-                keytype = OBJ_obj2nid(palg_internal->algorithm);
-
-                // Checking OPTIONAL params on EC
-                if (keytype == EVP_PKEY_EC) {
-                    int j;
-                    nid = OBJ_obj2nid(palg_internal->parameter->value.object);
-                    for (j = 0; j < OSSL_NELEM(nids_sig); j++) {
-                        if ((nids_sig[j].nid == nid) &&
-                            (nids_sig[j].length_private_key >
-                             buflen)) { // check if the curve is the
-                                        // same and if the key len is
-                                        // smaller than the max key
-                                        // size
-                            EVP_PKEY *ec_pkey;
-                            OSSL_PARAM params[3];
-                            int include_pub = 1;
-                            const unsigned char *buf3 =
-                                aType->value.sequence->data;
-                            unsigned char *buf4, *buf5;
-
-                            if (buflen != nids_sig[j].kex_length_secret +
-                                              7) { // no OPTIONAL
-                                                   // ECParameter and no
-                                                   // OPTIONAL Pubkey
-                                OPENSSL_free(name);
-                                ASN1_TYPE_free(aType);
-                                PKCS8_PRIV_KEY_INFO_free(p8inf_internal);
-                                OPENSSL_clear_free(concat_key, plen);
-                                sk_ASN1_TYPE_free(sk);
-                                return NULL;
-                            }
-                            ec_pkey = EVP_PKEY_new();
-                            d2i_PrivateKey(
-                                EVP_PKEY_EC, &ec_pkey, &buf3,
-                                aType->value.sequence->length); // create
-                                                                // a new
-                                                                // EVP_PKEY
-                                                                // using
-                                                                // ec
-                                                                // priv
-                                                                // key
-
-                            // set parameters for the
-                            // new priv key format
-                            params[0] = OSSL_PARAM_construct_int(
-                                OSSL_PKEY_PARAM_EC_INCLUDE_PUBLIC,
-                                &include_pub); // add
-                                               // pubkey
-                                               // to
-                                               // priv
-                                               // key
-                            params[1] = OSSL_PARAM_construct_utf8_string(
-                                OSSL_PKEY_PARAM_EC_ENCODING,
-                                OSSL_PKEY_EC_ENCODING_GROUP,
-                                0); // add ECParam to
-                                    // the priv key
-                            params[2] = OSSL_PARAM_construct_end();
-                            EVP_PKEY_set_params(ec_pkey, params);
-
-                            buf4 =
-                                OPENSSL_malloc(nids_sig[j].length_private_key);
-                            buf5 = buf4;
-                            buflen = i2d_PrivateKey(ec_pkey,
-                                                    &buf5); // encode priv
-                                                            // key
-                                                            // including
-                                                            // parameters
-
-                            aux += buflen;
-                            memcpy(concat_key + plen - 1 - aux, buf4,
-                                   buflen); // fill
-                                            // concat_key
-                                            // starting at
-                                            // the end
-
-                            EVP_PKEY_free(ec_pkey);
-                            OPENSSL_clear_free(buf4, buflen);
-                            break;
-                        }
-                    }
-                    if (j == OSSL_NELEM(nids_sig))
-                        nid = 0; // buflen is already with the
-                                 // correct size, changing nid
-                                 // to memcpy at the end
-                }
-
-                // if is a RSA key the actual encoding size might
-                // be different from max size we calculate that
-                // difference for to facilitate the key
-                // reconstruction
-                if (keytype == EVP_PKEY_RSA) {
-                    if (name[3] == '3') // 3072
-                        key_diff = nids_sig[5].length_private_key - buflen;
-                    else // 2048
-                        key_diff = nids_sig[6].length_private_key - buflen;
-                }
-
-                // removing extra OTECT STRING from ED25519 and ED448 keys
-                if ((keytype == EVP_PKEY_ED25519) ||
-                    (keytype == EVP_PKEY_ED448)) {
-                    ASN1_OCTET_STRING *ed_octet = NULL;
-                    ed_octet = d2i_ASN1_OCTET_STRING(&ed_octet, &buf, buflen);
-                    aux += ed_octet->length;
-                    memcpy(concat_key + plen - 1 - aux, ed_octet->data,
-                           ed_octet->length);
-                    nid = 1; // setting to non zero value so the key is not
-                             // copied again
-                    ASN1_OCTET_STRING_free(ed_octet);
-                }
-
-                if (!nid) {
-                    aux += buflen;
-                    memcpy(concat_key + plen - 1 - aux, buf,
-                           buflen); // fill concat_key
-                                    // starting at the end
-                }
-
-                OPENSSL_free(name);
-                PKCS8_PRIV_KEY_INFO_free(p8inf_internal);
-                ASN1_TYPE_free(aType);
-            }
-
-            p = OPENSSL_memdup(concat_key + plen - 1 - aux, aux);
-            OPENSSL_clear_free(concat_key, plen);
-            plen = aux; // update plen to correct size
-            sk_ASN1_TYPE_free(sk);
-        }
+        p = oqsx_composite_key_from_pkcs8(p, palg, &plen, &composite_aux);
     }
 
-    oqsx = oqsx_key_op(palg, p, plen + key_diff, KEY_OP_PRIVATE, libctx, propq);
-    if (get_keytype(OBJ_obj2nid(palg->algorithm)) != KEY_TYPE_CMP_SIG) {
-        ASN1_OCTET_STRING_free(oct);
-    } else {
+    oqsx = oqsx_key_op(palg, p, plen + composite_aux, KEY_OP_PRIVATE, libctx,
+                       propq);
+    if (get_keytype(OBJ_obj2nid(palg->algorithm)) == KEY_TYPE_CMP_SIG) {
         OPENSSL_clear_free((unsigned char *)p,
                            plen); // for COMPOSITE p include both privkey
+    } else {
+        ASN1_OCTET_STRING_free(oct);
     }
     return oqsx;
 }
@@ -1559,54 +1124,10 @@ OQSX_KEY *oqsx_key_new(OSSL_LIB_CTX *libctx, char *oqs_name, char *tls_name,
         ret->evp_info = evp_ctx->evp_info;
         break;
     case KEY_TYPE_CMP_SIG:
-        ret->numkeys = 2;
-        ret->privkeylen = 0;
-        ret->pubkeylen = 0;
-        ret->privkeylen_cmp = OPENSSL_malloc(ret->numkeys * sizeof(size_t));
-        ret->pubkeylen_cmp = OPENSSL_malloc(ret->numkeys * sizeof(size_t));
-        ret->comp_privkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
-        ret->comp_pubkey = OPENSSL_malloc(ret->numkeys * sizeof(void *));
-
-        for (i = 0; i < ret->numkeys; i++) {
-            char *name;
-            if ((name = get_cmpname(OBJ_sn2nid(tls_name), i)) == NULL) {
-                ERR_raise(ERR_LIB_USER, OQSPROV_R_INVALID_ENCODING);
-                goto err;
-            }
-            if (get_oqsname_fromtls(name) != 0) {
-                ret->oqsx_provider_ctx.oqsx_qs_ctx.sig =
-                    OQS_SIG_new(get_oqsname_fromtls(name));
-                if (!ret->oqsx_provider_ctx.oqsx_qs_ctx.sig) {
-                    fprintf(stderr,
-                            "Could not create OQS signature "
-                            "algorithm %s. "
-                            "Enabled in "
-                            "liboqs?A\n",
-                            name);
-                    goto err;
-                }
-                ret->privkeylen_cmp[i] =
-                    ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_secret_key;
-                ret->pubkeylen_cmp[i] =
-                    ret->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_public_key;
-            } else {
-                evp_ctx = OPENSSL_zalloc(sizeof(OQSX_EVP_CTX));
-                ON_ERR_GOTO(!evp_ctx, err);
-
-                ret2 = oqsx_hybsig_init(bit_security, evp_ctx, name);
-                ON_ERR_GOTO(ret2 <= 0 || !evp_ctx->ctx, err);
-                ret->oqsx_provider_ctx.oqsx_evp_ctx = evp_ctx;
-                ret->privkeylen_cmp[i] = ret->oqsx_provider_ctx.oqsx_evp_ctx
-                                             ->evp_info->length_private_key;
-                ret->pubkeylen_cmp[i] = ret->oqsx_provider_ctx.oqsx_evp_ctx
-                                            ->evp_info->length_public_key;
-            }
-            ret->privkeylen += ret->privkeylen_cmp[i];
-            ret->pubkeylen += ret->pubkeylen_cmp[i];
-            OPENSSL_free(name);
+        if ((ret = oqsx_composite_key_new(ret, tls_name, primitive,
+                                          bit_security)) == NULL) {
+            return NULL;
         }
-        ret->keytype = primitive;
-
         break;
     default:
         OQS_KEY_PRINTF2("OQSX_KEY: Unknown key type encountered: %d\n",
@@ -1674,8 +1195,7 @@ void oqsx_key_free(OQSX_KEY *key) {
     OPENSSL_free(key->comp_pubkey);
     OPENSSL_free(key->comp_privkey);
     if (key->keytype == KEY_TYPE_CMP_SIG) {
-        OPENSSL_free(key->privkeylen_cmp);
-        OPENSSL_free(key->pubkeylen_cmp);
+        oqsx_composite_key_free(key);
     }
     if (key->keytype == KEY_TYPE_KEM)
         OQS_KEM_free(key->oqsx_provider_ctx.oqsx_qs_ctx.kem);
@@ -1808,9 +1328,8 @@ static int oqsx_key_gen_oqs(OQSX_KEY *key, int gen_kem) {
 /* Generate classic keys, store length in leading SIZE_OF_UINT32 bytes of
  * pubkey/privkey buffers; returned EVP_PKEY must be freed if not used
  */
-static EVP_PKEY *oqsx_key_gen_evp_key_sig(OQSX_EVP_CTX *ctx,
-                                          unsigned char *pubkey,
-                                          unsigned char *privkey, int encode) {
+EVP_PKEY *oqsx_key_gen_evp_key_sig(OQSX_EVP_CTX *ctx, unsigned char *pubkey,
+                                   unsigned char *privkey, int encode) {
     int ret = 0, ret2 = 0, aux = 0;
 
     // Free at errhyb:
@@ -2037,28 +1556,7 @@ int oqsx_key_gen(OQSX_KEY *key) {
         key->classical_pkey = pkey;
         ret = oqsx_key_gen_oqs(key, key->keytype != KEY_TYPE_HYB_SIG);
     } else if (key->keytype == KEY_TYPE_CMP_SIG) {
-        int i;
-        ret = oqsx_key_set_composites(key, 0);
-        for (i = 0; i < key->numkeys; i++) {
-            char *name;
-            if ((name = get_cmpname(OBJ_sn2nid(key->tls_name), i)) == NULL) {
-                ON_ERR_GOTO(ret, err_gen);
-            }
-            if (get_oqsname_fromtls(name) == 0) {
-                pkey = oqsx_key_gen_evp_key_sig(
-                    key->oqsx_provider_ctx.oqsx_evp_ctx, key->comp_pubkey[i],
-                    key->comp_privkey[i], 0);
-                OPENSSL_free(name);
-                ON_ERR_GOTO(pkey == NULL, err_gen);
-                key->classical_pkey = pkey;
-            } else {
-                ret =
-                    OQS_SIG_keypair(key->oqsx_provider_ctx.oqsx_qs_ctx.sig,
-                                    key->comp_pubkey[i], key->comp_privkey[i]);
-                OPENSSL_free(name);
-                ON_ERR_GOTO(ret, err_gen);
-            }
-        }
+        return oqsx_composite_key_gen(key);
     } else if (key->keytype == KEY_TYPE_SIG) {
         ret = !oqsx_key_set_composites(key, 0);
         ON_ERR_GOTO(ret, err_gen);
@@ -2092,9 +1590,7 @@ int oqsx_key_maxsize(OQSX_KEY *key) {
                key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->length_signature +
                SIZE_OF_UINT32;
     case KEY_TYPE_CMP_SIG:
-        return sizeof(CompositeSignature) +
-               key->oqsx_provider_ctx.oqsx_evp_ctx->evp_info->length_signature +
-               key->oqsx_provider_ctx.oqsx_qs_ctx.sig->length_signature;
+        return oqsx_composite_key_maxsize(key);
 
     default:
         OQS_KEY_PRINTF("OQSX KEY: Wrong key type\n");
